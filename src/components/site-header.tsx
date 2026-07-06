@@ -1,15 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 
 import { sections } from "@/lib/sections";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openMenu = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setOpen(true);
+  };
+
+  const scheduleClose = () => {
+    closeTimer.current = setTimeout(() => setOpen(false), 200);
+  };
 
   return (
-    <header className="sticky top-0 z-10 border-b border-black/5 bg-white/90 backdrop-blur dark:border-white/10 dark:bg-zinc-950/90">
+    <header
+      className="sticky top-0 z-10 border-b border-black/5 bg-white/90 backdrop-blur dark:border-white/10 dark:bg-zinc-950/90"
+      onMouseLeave={scheduleClose}
+    >
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
         <Link
           className="text-sm font-semibold tracking-wide uppercase"
@@ -23,6 +36,7 @@ export function SiteHeader() {
           type="button"
           aria-expanded={open}
           aria-controls="sections-menu"
+          onMouseEnter={openMenu}
           onClick={() => setOpen((v) => !v)}
           className="flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
         >
@@ -45,6 +59,7 @@ export function SiteHeader() {
 
       <div
         id="sections-menu"
+        onMouseEnter={openMenu}
         className={`overflow-hidden border-t border-black/5 transition-[max-height] duration-300 dark:border-white/10 ${
           open ? "max-h-[80vh]" : "max-h-0 border-t-0"
         }`}
