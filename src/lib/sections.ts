@@ -101,6 +101,11 @@ export const sections: Section[] = [
         type: "paragraph",
         text: "I coach three things: the breath, the blood, and the brain — not the muscles. Most coaching in the U.S. trains until the muscles fail. I'd rather build the aerobic engine (breath, blood) and the mental game (brain) than chase muscular fatigue for its own sake. That takes longer to show results — usually 7 to 10 years for it to fully show up in a runner — which is exactly why patience is part of the philosophy, not separate from it.",
       },
+      { type: "heading", text: "Footwear and Technique Aren't an Afterthought" },
+      {
+        type: "paragraph",
+        text: "Lydiard treated running form as a skill to be taught, not something everyone arrives with. Even his most gifted athletes worked on technique — running tall, relaxed arms, a quick leg turnover — before layering on volume. He wanted shoes that interfered with the foot as little as possible: flexible enough to function \"like a second layer of skin,\" with no built-up heel, because an elevated heel creates instability a flat sole doesn't. He was skeptical of orthotics (\"the orthotics are for the shoes, not the feet\") and dead set against running with hand weights, since anything that adds tension undercuts the relaxation that makes a stride efficient. None of this is really about barefoot running as a trend — minimalist footwear and hard-surface training predate that label by decades. It's a belief that the foot should be left to do its job, and that good form has to be practiced deliberately, not assumed.",
+      },
     ],
   },
   {
@@ -110,6 +115,13 @@ export const sections: Section[] = [
       "Long-form essays on meaning, mastery, suffering, purpose, and character in the running life.",
     topics: ["Mastery", "Identity", "Purpose"],
     category: "foundations",
+    content: [
+      { type: "heading", text: "One More Step" },
+      {
+        type: "paragraph",
+        text: "Cliff Cushman was a 400m hurdler who won Olympic silver in Rome in 1960 and spent the next four years chasing gold. At the 1964 Olympic Trials, he fell on the fifth hurdle and missed the team. Instead of retreating from it, he wrote an open letter to his hometown newspaper, addressed to the young people who might have watched him fall on television. He didn't want their sympathy — he wanted them to set their own goals and pursue them with the same honesty he'd brought to running: \"get up, pick the cinders out of your wounds, and take one more step.\" Cushman was declared missing in action over Vietnam two years later, and officially declared dead in 1975. The letter outlived him, and it's still shared for the same reason he wrote it — not because falling doesn't cost you something, but because what you do immediately after is the only part still in your control.",
+      },
+    ],
   },
   {
     slug: "exercise-physiology",
@@ -118,6 +130,18 @@ export const sections: Section[] = [
       "First-principles explanations of VO₂ max, threshold, fatigue, adaptation, and biomechanics.",
     topics: ["Energy systems", "Muscle fibers", "Recovery biology"],
     category: "the-science",
+    content: [
+      { type: "heading", text: "Steady State and Oxygen Debt" },
+      {
+        type: "paragraph",
+        text: "Every runner has a ceiling on how much oxygen they can take in, transport, and use per minute — Lydiard called this the Steady State. Run within it and you're aerobic; push past it and the body has to cover the shortfall anaerobically, building up an oxygen debt alongside lactic acid. That debt doesn't grow in a straight line — it roughly doubles, squares, then cubes as effort increases, which is why a small increase in pace can cost a disproportionate amount of endurance. A trained runner can tolerate somewhere around 15–18 liters of total oxygen debt before neuromuscular breakdown sets in. The practical upshot: raising your Steady State ceiling through aerobic work is what lets a previously hard pace become comfortably sustainable.",
+      },
+      { type: "heading", text: "Fast-Twitch, Slow-Twitch, and the Acid/Alkali Balance" },
+      {
+        type: "paragraph",
+        text: "Slow-twitch (Type I) fibers run mostly on fat and thrive in a mildly alkaline system; fast-twitch Type IIA fibers lean on carbohydrate and generate more acid under load. The body's energy and hormonal systems work best in a narrow, mildly alkaline range (roughly pH 7.365–7.40), and high-intensity training pushes that balance toward acidic. That's the logic behind two ideas that show up throughout Lydiard-style programs: the harder your main sessions get, the more low-intensity recovery work you need to buffer it, and a serious volume of easy aerobic running can keep happening right up until a peak — because it doesn't fight against the acid load the way more hard sessions would.",
+      },
+    ],
   },
   {
     slug: "the-aerobic-base",
@@ -146,6 +170,29 @@ export const sections: Section[] = [
       "Summaries of books, papers, and historical methods that shaped distance running knowledge.",
     topics: ["Scientific papers", "Coaching texts", "Emerging research"],
     category: "the-science",
+    content: [
+      {
+        type: "heading",
+        text: "Polarized Training: What Elite Endurance Athletes Actually Do",
+      },
+      {
+        type: "paragraph",
+        text: "Sports scientist Stephen Seiler's research on Olympic gold medalists found their training wasn't evenly split across intensities — it was heavily polarized. A 2014 study of 12 cross-country skiing and biathlon gold medalists found roughly 90% of training volume was done at low intensity, with only a small fraction spent at threshold or above, even in the weeks leading directly into the Games (Tønnessen et al., PLOS ONE, 2014, \"The Road to Gold\"). A published breakdown of Eliud Kipchoge's training log in the 41 days before his 2017 Berlin Marathon world-record attempt showed the same pattern at the individual-session level: 34 of 59 sessions were easy runs, with only a handful of tempo, fartlek, or track sessions mixed in.",
+      },
+      {
+        type: "heading",
+        text: "Does the Order of Intensity Progression Matter?",
+      },
+      {
+        type: "paragraph",
+        text: "A 2016 study in Medicine & Science in Sports & Exercise (Bossi et al.) tested three ways of sequencing interval training over a 12-week cycle with well-trained cyclists — one group progressed from long, less-intense intervals toward short, harder ones, one did the reverse, and one mixed all three lengths throughout. All three groups improved similarly in power output and VO₂ peak, with no significant difference between approaches. The takeaway isn't that sequencing is irrelevant — it's that consistent, well-recovered interval work matters more than finding one correct order to build it in.",
+      },
+      { type: "heading", text: "Rating of Perceived Exertion (the Borg Scale)" },
+      {
+        type: "paragraph",
+        text: "Long before GPS watches, physiologist Gunnar Borg proposed in 1960 that how hard an effort feels correlates closely with what a machine would measure — closely enough that perceived effort is, by itself, a reliable training guide. His scale runs from 6 (\"very, very light\") to 20 (\"very, very hard\"), and multiplying the rating by ten gives a rough estimate of heart rate at that effort. It's the scientific basis for pace-by-feel training: if you can hold a conversation, you're in the aerobic range that builds a base.",
+      },
+    ],
   },
   {
     slug: "data-and-analytics",
@@ -178,6 +225,16 @@ export const sections: Section[] = [
         type: "paragraph",
         text: "At the '64 Tokyo Olympics, Lydiard's athletes ran a hard session of 20 quarter-miles. The next day, a rival Canadian runner watched them, then ran the exact same session himself. Asked what he thought of it, Lydiard said, \"I think it was the last nail in his coffin.\" His own athletes had needed that session; the Canadian didn't — he missed his event's final while Snell and Davies medaled. Good training and bad training can look identical on paper. What matters is whether that specific athlete needed it.",
       },
+      { type: "heading", text: "How Peter Snell Trained for a World Record" },
+      {
+        type: "paragraph",
+        text: "In 1962, Peter Snell — coached by Lydiard — built up to a 100-mile training week, ran hill circuits, and logged long aerobic runs up to 22 miles, all in the months before he broke the world mile record (3:54.4) and, weeks later, the 880-yard world record. He wasn't doing marathon-specific training; he was an 800/1500m runner. But the aerobic capacity built through that volume is what let him hold his speed deep into a race when it mattered most.",
+      },
+      { type: "heading", text: "Same Ingredients, Different Distances" },
+      {
+        type: "paragraph",
+        text: "Lydiard's own explanation for why he had milers run marathon-length long runs rather than piling on track intervals: speed is common — plenty of runners can manage a single fast quarter-mile — but almost none can hold that pace for four in a row. His view was that stamina, not raw speed, was the real limiter for most runners, and that endurance built through volume translated directly into the ability to finally use the speed they already had, right when the race demanded it.",
+      },
     ],
   },
   {
@@ -192,6 +249,17 @@ export const sections: Section[] = [
       {
         type: "paragraph",
         text: "A more useful question than pace splits: how long can this athlete actually think clearly under race stress? Mental fatigue tends to hit early, so if all the concentration gets spent in the first mile, there's nothing left for the finish. The fix is to bookend the effort — a controlled open, a quiet middle third that conserves mental energy, and a hard, deliberate close — decided before the start. Changing strategy mid-race rarely works.",
+      },
+      { type: "heading", text: "Race-Day Checklist" },
+      {
+        type: "list",
+        items: [
+          "Eat normally in the days beforehand — protein, carbs, and fat are all part of a balanced pre-race diet; finish your last full meal about three hours before the start.",
+          "Lace your shoes with your heel forced back into the shoe first, snug but not tight — loose lacing is what causes blistering.",
+          "Start conservatively and warm into the effort. Going out too fast early costs far more than it can ever gain back.",
+          "On hot days, drink water and electrolytes throughout the race, not just at the start — and keep your body wet. Sponging is one of the simplest defenses against overheating.",
+          "Don't surge mid-race. Every surge spends energy you don't get back.",
+        ],
       },
     ],
   },
@@ -208,6 +276,56 @@ export const sections: Section[] = [
         type: "paragraph",
         text: "A tempo run works best around 20–24 minutes of sustained effort, held at roughly a 6 out of 10 perceived effort — hard enough to be real work, controlled enough that you could keep going if you had to. Struggling to hold pace past 7–9 minutes in is the signal to back off, not push through: the point is time spent at the right intensity, not a number on the watch. Full duration at the correct effort beats redlining for half the time, usually within months.",
       },
+      { type: "heading", text: "Hill Circuit Training" },
+      {
+        type: "paragraph",
+        text: "Find a hill graded around 1-in-3, with a flat stretch at the bottom for sprint work. After warming up, spring up the hill with a bouncing action, using your own body weight as resistance rather than just lifting the knees higher. Jog for about three minutes at the top, then stride back down fast to develop leg speed. At the bottom, run a few windsprints (50–400m) before starting the next lap. Repeat for about an hour, three days a week, alternating with dedicated leg-speed days.",
+      },
+      { type: "heading", text: "Leg-Speed Repetitions" },
+      {
+        type: "paragraph",
+        text: "On a flat or gently sloped stretch of 120–150 meters, run it ten times with a full three-minute recovery between each rep. The only thing to focus on is turning the legs over as fast as possible — not stride length. It can feel unproductive at first; results typically show up after four to six weeks of consistent work.",
+      },
+    ],
+  },
+  {
+    slug: "5k-training",
+    title: "5K Training",
+    mission:
+      "Structured 5K and cross country training built for the distances high school and collegiate racers actually run — periodization, pacing, and race-week execution.",
+    topics: ["Track periodization", "Race-week schedule", "Pacing"],
+    category: "coaching-and-training",
+    content: [
+      { type: "heading", text: "Building Toward the Track Season" },
+      {
+        type: "paragraph",
+        text: "Lydiard broke a track buildup into three phases. The first four weeks focus on anaerobic and speed development — hard running totaling around three miles per session (whether that's 12x400m, 6x600m, or similar), always with at least a day of recovery between hard efforts, alternating with dedicated sprint-technique days. The next four and a half weeks shift to coordination: a weekly sharpening session of short, fast accelerations, a time trial near race distance to diagnose weaknesses, and a development race or two. The final ten days are for freshening up — small volume, short efforts, legs kept fresh rather than fatigued going into the goal race.",
+      },
+      { type: "heading", text: "Non-Race Week" },
+      {
+        type: "list",
+        items: [
+          "Repetitions early in the week to develop anaerobic capacity.",
+          "Aerobic running mid-week to hold the base.",
+          "A time trial near race pace to check fitness and pacing.",
+          "Fast relaxed striding to keep leg speed sharp.",
+          "A second time trial later in the week.",
+          "An aerobic run to close out the week and recover into the next cycle.",
+        ],
+      },
+      { type: "heading", text: "Race Week" },
+      {
+        type: "list",
+        items: [
+          "Monday: windsprints.",
+          "Tuesday: easy fartlek.",
+          "Wednesday: a short time trial.",
+          "Thursday: fast relaxed striding.",
+          "Friday: an easy jog.",
+          "Saturday: the race.",
+          "Sunday: a long aerobic run.",
+        ],
+      },
     ],
   },
   {
@@ -217,6 +335,28 @@ export const sections: Section[] = [
       "Progressive plans from beginner to elite for cross country, 5K, 10K, half marathon, and marathon.",
     topics: ["Beginner to elite", "Race-specific plans", "Progression"],
     category: "coaching-and-training",
+    content: [
+      { type: "heading", text: "From Zero to 20 Minutes: An 8-Week Start" },
+      {
+        type: "paragraph",
+        text: "The Lydiard Foundation's beginner program is built on walk/jog intervals, three days a week, starting at just 15 minutes total. Each week, the jogging segments get slightly longer and the walking segments get shorter, with one slightly longer session built in on the third training day. By the end of eight weeks, most beginners are running 20 minutes continuously — not because the schedule pushed them there, but because the body adapts faster than most people expect once the stress is applied consistently and recovery days are respected.",
+      },
+      { type: "heading", text: "The Golden Rules" },
+      {
+        type: "list",
+        items: [
+          "Train, don't strain — you genuinely cannot run too slowly.",
+          "It's not the distance that stops you, it's the speed. If in doubt, do less.",
+          "If a week feels too hard, repeat it rather than pushing forward on schedule.",
+          "Listen to your body over the plan on paper — the schedule is a guide, not an order.",
+        ],
+      },
+      { type: "heading", text: "Finding Your Training Heart Rate" },
+      {
+        type: "paragraph",
+        text: "A simple formula for an approximate training range: (220 minus your age, minus your resting heart rate) times 70%, plus your resting heart rate again — add 3 if you're a woman. Give yourself about five beats on either side of that number as your range. Treat it as a rough guideline, not gospel — how an effort feels should always override what a number on a screen says.",
+      },
+    ],
   },
   {
     slug: "sports-psychology",
@@ -338,6 +478,25 @@ export const sections: Section[] = [
       "Curated books, podcasts, tools, and references for lifelong learning in the sport.",
     topics: ["Reading list", "Tools", "External references"],
     category: "writing-and-resources",
+    content: [
+      { type: "heading", text: "Foundational Reading" },
+      {
+        type: "list",
+        items: [
+          "Run to the Top / Running to the Top — Arthur Lydiard",
+          "Jogging with Arthur Lydiard — Arthur Lydiard",
+          "Healthy Intelligent Training — Keith Livingstone",
+          "Daniels' Running Formula — Jack Daniels",
+          "On the Wings of Mercury — Lorraine Moller",
+          "\"The Basics of Jogging\" — Dr. George Sheehan",
+        ],
+      },
+      { type: "heading", text: "Where the Physiology Comes From" },
+      {
+        type: "paragraph",
+        text: "Much of the research referenced on this site traces back to Stephen Seiler's work at the University of Agder on training-intensity distribution in elite endurance athletes, including the 2014 PLOS ONE study \"The Road to Gold.\" See the Research Library for the specific findings.",
+      },
+    ],
   },
   {
     slug: "contact",
