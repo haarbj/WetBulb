@@ -42,12 +42,18 @@ export const categories: Category[] = [
   },
 ];
 
+export type ContentBlock =
+  | { type: "heading"; text: string }
+  | { type: "paragraph"; text: string }
+  | { type: "list"; items: string[] };
+
 export type Section = {
   slug: string;
   title: string;
   mission: string;
   topics: string[];
   category: string;
+  content?: ContentBlock[];
 };
 
 export const sections: Section[] = [

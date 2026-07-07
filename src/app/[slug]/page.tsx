@@ -123,6 +123,31 @@ export default async function SectionPage({ params }: SectionPageProps) {
 
       {ToolComponent ? (
         <ToolComponent />
+      ) : currentSection.content ? (
+        <div className="mt-10 max-w-[70ch] space-y-4 text-base leading-relaxed text-zinc-600 dark:text-zinc-300">
+          {currentSection.content.map((block, index) => {
+            if (block.type === "heading") {
+              return (
+                <h2
+                  key={index}
+                  className="font-heading pt-4 text-2xl font-semibold text-zinc-900 first:pt-0 dark:text-white"
+                >
+                  {block.text}
+                </h2>
+              );
+            }
+            if (block.type === "list") {
+              return (
+                <ul key={index} className="space-y-2">
+                  {block.items.map((item) => (
+                    <li key={item}>• {item}</li>
+                  ))}
+                </ul>
+              );
+            }
+            return <p key={index}>{block.text}</p>;
+          })}
+        </div>
       ) : (
         <div className="mt-10 rounded-2xl border border-black/10 bg-white p-8 shadow-sm dark:border-white/10 dark:bg-zinc-900">
           <h2 className="text-lg font-semibold">Planned Topics</h2>
