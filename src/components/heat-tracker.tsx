@@ -400,7 +400,7 @@ export function HeatTracker() {
   const clearChartHover = () => setHoverIndex(null);
 
   const hoverLeftPct = hoverPoint
-    ? Math.max(4, Math.min(96, (xForIndex(hoverIndex ?? 0) / CHART_WIDTH) * 100))
+    ? Math.max(16, Math.min(84, (xForIndex(hoverIndex ?? 0) / CHART_WIDTH) * 100))
     : null;
 
   return (
@@ -586,73 +586,43 @@ export function HeatTracker() {
                 const value = minValue + (step / 4) * (maxValue - minValue);
                 const y = yForValue(value);
                 return (
-                  <g key={step}>
-                    <line
-                      x1={PAD_LEFT}
-                      y1={y}
-                      x2={CHART_WIDTH - PAD_RIGHT}
-                      y2={y}
-                      strokeWidth="1"
-                      className="stroke-black/10 dark:stroke-white/10"
-                    />
-                    <text
-                      x={PAD_LEFT - 8}
-                      y={y + 4}
-                      textAnchor="end"
-                      className="fill-zinc-600 text-[10.5px] dark:fill-zinc-300"
-                    >
-                      {cToF(value).toFixed(0)}°
-                    </text>
-                  </g>
+                  <line
+                    key={step}
+                    x1={PAD_LEFT}
+                    y1={y}
+                    x2={CHART_WIDTH - PAD_RIGHT}
+                    y2={y}
+                    strokeWidth="1"
+                    className="stroke-black/10 dark:stroke-white/10"
+                  />
                 );
               })}
 
               {series.map((point, index) => {
                 if (point.time.getHours() % 6 !== 0) return null;
                 return (
-                  <g key={point.time.toISOString()}>
-                    <line
-                      x1={xForIndex(index)}
-                      y1={PAD_TOP}
-                      x2={xForIndex(index)}
-                      y2={CHART_HEIGHT - PAD_BOTTOM}
-                      strokeWidth="1"
-                      className="stroke-black/10 dark:stroke-white/10"
-                    />
-                    <text
-                      x={xForIndex(index)}
-                      y={CHART_HEIGHT - PAD_BOTTOM + 16}
-                      textAnchor="middle"
-                      className="fill-zinc-600 text-[10px] dark:fill-zinc-300"
-                    >
-                      {point.time.toLocaleTimeString(undefined, {
-                        hour: "numeric",
-                      })}
-                    </text>
-                  </g>
+                  <line
+                    key={point.time.toISOString()}
+                    x1={xForIndex(index)}
+                    y1={PAD_TOP}
+                    x2={xForIndex(index)}
+                    y2={CHART_HEIGHT - PAD_BOTTOM}
+                    strokeWidth="1"
+                    className="stroke-black/10 dark:stroke-white/10"
+                  />
                 );
               })}
 
               {BLACK_FLAG_C >= minValue && BLACK_FLAG_C <= maxValue && (
-                <>
-                  <line
-                    x1={PAD_LEFT}
-                    y1={yForValue(BLACK_FLAG_C)}
-                    x2={CHART_WIDTH - PAD_RIGHT}
-                    y2={yForValue(BLACK_FLAG_C)}
-                    strokeWidth="1.5"
-                    strokeDasharray="5,4"
-                    className="stroke-zinc-900 dark:stroke-white"
-                  />
-                  <text
-                    x={CHART_WIDTH - PAD_RIGHT}
-                    y={yForValue(BLACK_FLAG_C) - 6}
-                    textAnchor="end"
-                    className="fill-zinc-900 text-[10.5px] dark:fill-white"
-                  >
-                    {cToF(BLACK_FLAG_C).toFixed(0)}°F — take training indoors
-                  </text>
-                </>
+                <line
+                  x1={PAD_LEFT}
+                  y1={yForValue(BLACK_FLAG_C)}
+                  x2={CHART_WIDTH - PAD_RIGHT}
+                  y2={yForValue(BLACK_FLAG_C)}
+                  strokeWidth="1.5"
+                  strokeDasharray="5,4"
+                  className="stroke-zinc-900 dark:stroke-white"
+                />
               )}
 
               <path d={areaPath} fill={`url(#${lineGradientId})`} mask={`url(#${areaMaskId})`} />
@@ -665,40 +635,20 @@ export function HeatTracker() {
                 strokeLinecap="round"
               />
 
-              <g>
-                <circle
-                  cx={xForIndex(lowIndex)}
-                  cy={yForValue(series[lowIndex].wbgtC)}
-                  r="3.5"
-                  strokeWidth="1.5"
-                  className="fill-white stroke-zinc-600 dark:fill-zinc-900 dark:stroke-zinc-300"
-                />
-                <text
-                  x={xForIndex(lowIndex)}
-                  y={yForValue(series[lowIndex].wbgtC) + 17}
-                  textAnchor="middle"
-                  className="fill-zinc-600 text-[10px] font-semibold dark:fill-zinc-300"
-                >
-                  L
-                </text>
-              </g>
-              <g>
-                <circle
-                  cx={xForIndex(highIndex)}
-                  cy={yForValue(series[highIndex].wbgtC)}
-                  r="3.5"
-                  strokeWidth="1.5"
-                  className="fill-white stroke-zinc-600 dark:fill-zinc-900 dark:stroke-zinc-300"
-                />
-                <text
-                  x={xForIndex(highIndex)}
-                  y={yForValue(series[highIndex].wbgtC) - 9}
-                  textAnchor="middle"
-                  className="fill-zinc-600 text-[10px] font-semibold dark:fill-zinc-300"
-                >
-                  H
-                </text>
-              </g>
+              <circle
+                cx={xForIndex(lowIndex)}
+                cy={yForValue(series[lowIndex].wbgtC)}
+                r="3.5"
+                strokeWidth="1.5"
+                className="fill-white stroke-zinc-600 dark:fill-zinc-900 dark:stroke-zinc-300"
+              />
+              <circle
+                cx={xForIndex(highIndex)}
+                cy={yForValue(series[highIndex].wbgtC)}
+                r="3.5"
+                strokeWidth="1.5"
+                className="fill-white stroke-zinc-600 dark:fill-zinc-900 dark:stroke-zinc-300"
+              />
 
               <circle
                 cx={xForIndex(0)}
@@ -734,33 +684,111 @@ export function HeatTracker() {
             </p>
           )}
 
+          {series && (
+            <>
+              {/* Axis and point labels are rendered as HTML, not SVG <text>,
+                  so they stay a real, legible font size on narrow screens
+                  instead of shrinking with the chart's viewBox scale. */}
+              {Array.from({ length: 5 }, (_, step) => {
+                const value = minValue + (step / 4) * (maxValue - minValue);
+                const topPct = (yForValue(value) / CHART_HEIGHT) * 100;
+                return (
+                  <span
+                    key={step}
+                    className="pointer-events-none absolute left-1 -translate-y-1/2 font-mono text-[10px] text-zinc-600 sm:text-[11px] dark:text-zinc-300"
+                    style={{ top: `${topPct}%` }}
+                  >
+                    {cToF(value).toFixed(0)}°
+                  </span>
+                );
+              })}
+
+              {series.map((point, index) => {
+                const hour = point.time.getHours();
+                if (hour % 6 !== 0) return null;
+                const isMajor = hour % 12 === 0;
+                const leftPct = (xForIndex(index) / CHART_WIDTH) * 100;
+                return (
+                  <span
+                    key={point.time.toISOString()}
+                    className={`pointer-events-none absolute bottom-0.5 -translate-x-1/2 font-mono text-[10px] text-zinc-600 sm:text-[11px] dark:text-zinc-300 ${
+                      isMajor ? "" : "hidden sm:inline-block"
+                    }`}
+                    style={{ left: `${leftPct}%` }}
+                  >
+                    {point.time.toLocaleTimeString(undefined, {
+                      hour: "numeric",
+                    })}
+                  </span>
+                );
+              })}
+
+              <span
+                className="pointer-events-none absolute -translate-x-1/2 text-[10px] font-semibold text-zinc-600 sm:text-[11px] dark:text-zinc-300"
+                style={{
+                  left: `${(xForIndex(lowIndex) / CHART_WIDTH) * 100}%`,
+                  top: `${(yForValue(series[lowIndex].wbgtC) / CHART_HEIGHT) * 100}%`,
+                  marginTop: "10px",
+                }}
+              >
+                L
+              </span>
+              <span
+                className="pointer-events-none absolute -translate-x-1/2 text-[10px] font-semibold text-zinc-600 sm:text-[11px] dark:text-zinc-300"
+                style={{
+                  left: `${(xForIndex(highIndex) / CHART_WIDTH) * 100}%`,
+                  top: `${(yForValue(series[highIndex].wbgtC) / CHART_HEIGHT) * 100}%`,
+                  marginTop: "-20px",
+                }}
+              >
+                H
+              </span>
+
+              {BLACK_FLAG_C >= minValue && BLACK_FLAG_C <= maxValue && (
+                <div
+                  className="pointer-events-none absolute right-1 -translate-y-full text-[10px] text-zinc-900 sm:text-[10.5px] dark:text-white"
+                  style={{
+                    top: `${(yForValue(BLACK_FLAG_C) / CHART_HEIGHT) * 100}%`,
+                  }}
+                >
+                  <span className="hidden sm:inline">
+                    {cToF(BLACK_FLAG_C).toFixed(0)}°F — take training indoors
+                  </span>
+                  <span className="sm:hidden">
+                    {cToF(BLACK_FLAG_C).toFixed(0)}°F limit
+                  </span>
+                </div>
+              )}
+            </>
+          )}
+
           {hoverPoint && hoverLeftPct !== null && (
             <div
-              className="pointer-events-none absolute top-2 -translate-x-1/2 rounded-lg border border-black/10 bg-white px-3 py-2 shadow-md dark:border-white/10 dark:bg-zinc-900"
+              className="pointer-events-none absolute top-2 w-28 -translate-x-1/2 rounded-lg border border-black/10 bg-white px-2.5 py-2 text-center shadow-md sm:w-auto sm:text-left dark:border-white/10 dark:bg-zinc-900"
               style={{ left: `${hoverLeftPct}%` }}
             >
-              <p className="font-mono text-[11px] whitespace-nowrap text-zinc-600 dark:text-zinc-300">
+              <p className="font-mono text-[11px] text-zinc-600 sm:whitespace-nowrap dark:text-zinc-300">
                 {hoverPoint.time.toLocaleTimeString(undefined, {
                   hour: "numeric",
                   minute: "2-digit",
                 })}
               </p>
-              <div className="mt-1 flex items-center gap-1.5">
+              <div className="mt-1 flex items-center justify-center gap-1.5 sm:justify-start">
                 <span
-                  className={`h-2 w-2 rounded-full ${zoneFor(hoverPoint.wbgtC).swatchClass}`}
+                  className={`h-2 w-2 shrink-0 rounded-full ${zoneFor(hoverPoint.wbgtC).swatchClass}`}
                 />
                 <p
-                  className={`font-heading text-sm font-semibold whitespace-nowrap ${zoneFor(hoverPoint.wbgtC).textClass}`}
+                  className={`font-heading text-sm font-semibold sm:whitespace-nowrap ${zoneFor(hoverPoint.wbgtC).textClass}`}
                 >
                   {cToF(hoverPoint.wbgtC).toFixed(1)}°F WBGT
                 </p>
               </div>
-              <p className="mt-1 text-[11px] whitespace-nowrap text-zinc-600 dark:text-zinc-300">
+              <p className="mt-1 text-[11px] text-zinc-600 sm:whitespace-nowrap dark:text-zinc-300">
                 {cToF(hoverPoint.tempC).toFixed(0)}°F air · {hoverPoint.rh}%
                 humidity
               </p>
               <p
-                className={`mt-0.5 text-[11px] font-medium whitespace-nowrap ${zoneFor(hoverPoint.wbgtC).textClass}`}
+                className={`mt-0.5 text-[11px] font-medium sm:whitespace-nowrap ${zoneFor(hoverPoint.wbgtC).textClass}`}
               >
                 {zoneFor(hoverPoint.wbgtC).flagLabel}
               </p>
@@ -855,12 +883,27 @@ export function HeatTracker() {
             WBGT ≈ 0.567·Ta + 0.393·e + 3.94
           </code>
           , where <code className="rounded bg-black/5 px-1.5 py-0.5 font-mono text-xs dark:bg-white/10">e</code> is
-          vapor pressure derived from relative humidity. It&rsquo;s a solid
-          stand-in when there&rsquo;s no physical sensor on hand, but it
-          doesn&rsquo;t yet account for wind speed or direct sun, so on very
-          sunny, still days the real WBGT may run a bit higher than shown
-          here.
+          vapor pressure derived from relative humidity.<sup>1</sup> It&rsquo;s
+          a solid stand-in when there&rsquo;s no physical sensor on hand, but
+          validation studies have found it doesn&rsquo;t fully account for
+          wind speed or direct sun, so on very sunny, still days the real
+          WBGT may run a bit higher than shown here.<sup>2</sup>
         </p>
+
+        <h2 className="font-heading text-lg font-semibold text-zinc-900 dark:text-white">
+          How to use it
+        </h2>
+        <p>
+          Check it before you plan a session, not just before you walk out
+          the door — the 48-hour outlook exists so you can move a track
+          workout or long run to a cooler window (early morning tends to
+          beat afternoon) instead of just gutting through the heat you
+          happen to hit. Treat the flag color as the headline and the exact
+          number as a detail: conditions right at a boundary deserve the
+          more conservative read, since heat illness risk doesn&rsquo;t
+          actually jump at a clean line the way the categories imply.
+        </p>
+
         <p>
           The flag categories and training notes follow the American College
           of Sports Medicine&rsquo;s WBGT guidelines: green flag is a green
@@ -869,10 +912,14 @@ export function HeatTracker() {
           while easy mileage stays fine, red flag means shifting those hard
           efforts to a treadmill or a cooler window of the day, and black
           flag is the point where outdoor training itself carries real
-          heat-illness risk.
-          The 48-hour outlook is there to help pick which window — this
-          afternoon, tomorrow morning — is the better time for a track
-          session or long run.
+          heat-illness risk.<sup>3</sup> These aren&rsquo;t arbitrary lines —
+          at the Boston Marathon, every recorded exertional heat stroke case
+          over a multi-year period occurred once WBGT climbed into this
+          range, and incidence tracked the rise in WBGT from the start of
+          the race.<sup>4</sup> A separate 30-year analysis of the Twin
+          Cities Marathon found the same pattern: WBGT was a meaningful
+          predictor of medical tent volume and emergency transfers on
+          unexpectedly warm race days.<sup>5</sup>
         </p>
         <p>
           This is general sports-science guidance, not a substitute for a
@@ -881,6 +928,85 @@ export function HeatTracker() {
           it&rsquo;s worth erring conservative and listening to how the body
           actually feels that day.
         </p>
+
+        <div className="border-t border-black/10 pt-4 dark:border-white/10">
+          <h3 className="text-xs font-semibold tracking-wide text-zinc-600 uppercase dark:text-zinc-300">
+            Sources
+          </h3>
+          <ol className="mt-2 list-decimal space-y-1.5 pl-4 text-xs">
+            <li>
+              Australian Bureau of Meteorology,{" "}
+              <a
+                href="https://www.bom.gov.au/info/thermal_stress/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-900 underline decoration-black/30 underline-offset-2 hover:decoration-black dark:text-white dark:decoration-white/30 dark:hover:decoration-white"
+              >
+                Thermal Comfort observations
+              </a>{" "}
+              — source of the outdoor WBGT approximation formula used here.
+            </li>
+            <li>
+              Lemke &amp; Kjellstrom,{" "}
+              <a
+                href="https://www.sciencedirect.com/science/article/abs/pii/S2212095519302469"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-900 underline decoration-black/30 underline-offset-2 hover:decoration-black dark:text-white dark:decoration-white/30 dark:hover:decoration-white"
+              >
+                Applicability of the model presented by the Australian
+                Bureau of Meteorology to determine WBGT in outdoor
+                workplaces
+              </a>{" "}
+              — independent validation of the approximation&rsquo;s accuracy
+              and limitations against physical sensors.
+            </li>
+            <li>
+              Armstrong et al.,{" "}
+              <a
+                href="https://pubmed.ncbi.nlm.nih.gov/17473783/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-900 underline decoration-black/30 underline-offset-2 hover:decoration-black dark:text-white dark:decoration-white/30 dark:hover:decoration-white"
+              >
+                American College of Sports Medicine position stand:
+                Exertional heat illness during training and competition
+              </a>
+              , <em>Medicine &amp; Science in Sports &amp; Exercise</em>{" "}
+              (2007) — source of the flag thresholds and training guidance
+              used on this page.
+            </li>
+            <li>
+              Chiampas et al.,{" "}
+              <a
+                href="https://pubmed.ncbi.nlm.nih.gov/33756522/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-900 underline decoration-black/30 underline-offset-2 hover:decoration-black dark:text-white dark:decoration-white/30 dark:hover:decoration-white"
+              >
+                Exertional Heat Stroke at the Boston Marathon: Demographics
+                and the Environment
+              </a>{" "}
+              — real-race evidence linking WBGT to heat stroke incidence in
+              distance runners.
+            </li>
+            <li>
+              Roberts et al.,{" "}
+              <a
+                href="https://pubmed.ncbi.nlm.nih.gov/36205927/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-900 underline decoration-black/30 underline-offset-2 hover:decoration-black dark:text-white dark:decoration-white/30 dark:hover:decoration-white"
+              >
+                Using Wet Bulb Globe Temperature and Physiological
+                Equivalent Temperature as Predictive Models of Medical
+                Stress in a Marathon: Analysis of 30 Years of Data From the
+                Twin Cities Marathon
+              </a>{" "}
+              — three decades of race data on WBGT and medical demand.
+            </li>
+          </ol>
+        </div>
       </div>
 
       <p className="border-t border-black/10 pt-4 text-xs text-zinc-600 dark:border-white/10 dark:text-zinc-300">
