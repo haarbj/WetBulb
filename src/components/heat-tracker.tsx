@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 
 type ZoneName = "green" | "yellow" | "red" | "black";
@@ -13,6 +13,10 @@ type Zone = {
   fillClass: string;
   bandClass: string;
   swatchClass: string;
+  ringClass: string;
+  // Literal hex, not a Tailwind class — SVG <stop stop-color> needs a real
+  // color value, which Tailwind utility classes can't provide.
+  hex: string;
 };
 
 const ZONES: Zone[] = [
@@ -24,6 +28,8 @@ const ZONES: Zone[] = [
     fillClass: "fill-green-600",
     bandClass: "fill-green-600/10",
     swatchClass: "bg-green-600",
+    ringClass: "stroke-green-600",
+    hex: "#16a34a",
   },
   {
     maxC: 23,
@@ -33,6 +39,8 @@ const ZONES: Zone[] = [
     fillClass: "fill-amber-600",
     bandClass: "fill-amber-600/10",
     swatchClass: "bg-amber-600",
+    ringClass: "stroke-amber-600",
+    hex: "#d97706",
   },
   {
     maxC: 28,
@@ -42,6 +50,8 @@ const ZONES: Zone[] = [
     fillClass: "fill-red-600",
     bandClass: "fill-red-600/10",
     swatchClass: "bg-red-600",
+    ringClass: "stroke-red-600",
+    hex: "#dc2626",
   },
   {
     maxC: Infinity,
@@ -51,6 +61,11 @@ const ZONES: Zone[] = [
     fillClass: "fill-zinc-900 dark:fill-white",
     bandClass: "fill-zinc-900/10 dark:fill-white/10",
     swatchClass: "bg-zinc-900 dark:bg-white",
+    ringClass: "stroke-zinc-900 dark:stroke-white",
+    // Fixed dark-red rather than a light/dark-flipped value: gradient stops
+    // can't respond to a dark: variant, so this needs one color that stays
+    // legible on both a white and a zinc-900 chart card.
+    hex: "#7f1d1d",
   },
 ];
 
@@ -244,6 +259,10 @@ export function HeatTracker() {
   const [clock, setClock] = useState("");
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const chartSvgRef = useRef<SVGSVGElement>(null);
+  const gradientBaseId = useId();
+  const lineGradientId = `wbgt-line-${gradientBaseId}`;
+  const areaFadeId = `wbgt-area-fade-${gradientBaseId}`;
+  const areaMaskId = `wbgt-area-mask-${gradientBaseId}`;
 
   useEffect(() => {
     const updateClock = () => {
@@ -357,6 +376,15 @@ export function HeatTracker() {
 
   const hoverPoint =
     series && hoverIndex !== null ? series[hoverIndex] : null;
+
+  let lowIndex = 0;
+  let highIndex = 0;
+  if (series) {
+    series.forEach((point, index) => {
+      if (point.wbgtC < series[lowIndex].wbgtC) lowIndex = index;
+      if (point.wbgtC > series[highIndex].wbgtC) highIndex = index;
+    });
+  }
 
   const handleChartPointer = (event: ReactPointerEvent<SVGSVGElement>) => {
     if (!series || !chartSvgRef.current) return;
@@ -505,6 +533,38 @@ export function HeatTracker() {
               onPointerDown={handleChartPointer}
               onPointerLeave={clearChartHover}
             >
+              <defs>
+                <linearGradient
+                  id={lineGradientId}
+                  gradientUnits="userSpaceOnUse"
+                  x1={PAD_LEFT}
+                  y1="0"
+                  x2={CHART_WIDTH - PAD_RIGHT}
+                  y2="0"
+                >
+                  {series.map((point, index) => (
+                    <stop
+                      key={point.time.toISOString()}
+                      offset={`${(index / Math.max(1, series.length - 1)) * 100}%`}
+                      stopColor={zoneFor(point.wbgtC).hex}
+                    />
+                  ))}
+                </linearGradient>
+                <linearGradient id={areaFadeId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.35" />
+                  <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                </linearGradient>
+                <mask id={areaMaskId}>
+                  <rect
+                    x={PAD_LEFT}
+                    y={PAD_TOP}
+                    width={PLOT_WIDTH}
+                    height={PLOT_HEIGHT}
+                    fill={`url(#${areaFadeId})`}
+                  />
+                </mask>
+              </defs>
+
               {ZONES.map((zoneBand, index) => {
                 const prevMax = index === 0 ? minValue : ZONES[index - 1].maxC;
                 const top = Math.min(zoneBand.maxC, maxValue);
@@ -595,33 +655,58 @@ export function HeatTracker() {
                 </>
               )}
 
-              <path
-                d={areaPath}
-                opacity={0.08}
-                className={zone ? zone.fillClass : "fill-zinc-900"}
-              />
+              <path d={areaPath} fill={`url(#${lineGradientId})`} mask={`url(#${areaMaskId})`} />
               <path
                 d={linePath}
                 fill="none"
-                strokeWidth="2.5"
+                stroke={`url(#${lineGradientId})`}
+                strokeWidth="3"
                 strokeLinejoin="round"
                 strokeLinecap="round"
-                className="stroke-zinc-900 dark:stroke-white"
               />
 
-              {series.map((point, index) => {
-                if (index % 3 !== 0) return null;
-                const pointZone = zoneFor(point.wbgtC);
-                return (
-                  <circle
-                    key={point.time.toISOString()}
-                    cx={xForIndex(index)}
-                    cy={yForValue(point.wbgtC)}
-                    r="2.6"
-                    className={pointZone.fillClass}
-                  />
-                );
-              })}
+              <g>
+                <circle
+                  cx={xForIndex(lowIndex)}
+                  cy={yForValue(series[lowIndex].wbgtC)}
+                  r="3.5"
+                  strokeWidth="1.5"
+                  className="fill-white stroke-zinc-600 dark:fill-zinc-900 dark:stroke-zinc-300"
+                />
+                <text
+                  x={xForIndex(lowIndex)}
+                  y={yForValue(series[lowIndex].wbgtC) + 17}
+                  textAnchor="middle"
+                  className="fill-zinc-600 text-[10px] font-semibold dark:fill-zinc-300"
+                >
+                  L
+                </text>
+              </g>
+              <g>
+                <circle
+                  cx={xForIndex(highIndex)}
+                  cy={yForValue(series[highIndex].wbgtC)}
+                  r="3.5"
+                  strokeWidth="1.5"
+                  className="fill-white stroke-zinc-600 dark:fill-zinc-900 dark:stroke-zinc-300"
+                />
+                <text
+                  x={xForIndex(highIndex)}
+                  y={yForValue(series[highIndex].wbgtC) - 9}
+                  textAnchor="middle"
+                  className="fill-zinc-600 text-[10px] font-semibold dark:fill-zinc-300"
+                >
+                  H
+                </text>
+              </g>
+
+              <circle
+                cx={xForIndex(0)}
+                cy={yForValue(series[0].wbgtC)}
+                r="5.5"
+                strokeWidth="2.5"
+                className={`fill-white dark:fill-zinc-900 ${zoneFor(series[0].wbgtC).ringClass}`}
+              />
 
               {hoverPoint && hoverIndex !== null && (
                 <>
@@ -636,9 +721,9 @@ export function HeatTracker() {
                   <circle
                     cx={xForIndex(hoverIndex)}
                     cy={yForValue(hoverPoint.wbgtC)}
-                    r="5"
-                    strokeWidth="2"
-                    className={`${zoneFor(hoverPoint.wbgtC).fillClass} stroke-white dark:stroke-zinc-900`}
+                    r="5.5"
+                    strokeWidth="2.5"
+                    className={`fill-white dark:fill-zinc-900 ${zoneFor(hoverPoint.wbgtC).ringClass}`}
                   />
                 </>
               )}
@@ -660,10 +745,23 @@ export function HeatTracker() {
                   minute: "2-digit",
                 })}
               </p>
+              <div className="mt-1 flex items-center gap-1.5">
+                <span
+                  className={`h-2 w-2 rounded-full ${zoneFor(hoverPoint.wbgtC).swatchClass}`}
+                />
+                <p
+                  className={`font-heading text-sm font-semibold whitespace-nowrap ${zoneFor(hoverPoint.wbgtC).textClass}`}
+                >
+                  {cToF(hoverPoint.wbgtC).toFixed(1)}°F WBGT
+                </p>
+              </div>
+              <p className="mt-1 text-[11px] whitespace-nowrap text-zinc-600 dark:text-zinc-300">
+                {cToF(hoverPoint.tempC).toFixed(0)}°F air · {hoverPoint.rh}%
+                humidity
+              </p>
               <p
-                className={`font-heading text-sm font-semibold whitespace-nowrap ${zoneFor(hoverPoint.wbgtC).textClass}`}
+                className={`mt-0.5 text-[11px] font-medium whitespace-nowrap ${zoneFor(hoverPoint.wbgtC).textClass}`}
               >
-                {cToF(hoverPoint.wbgtC).toFixed(1)}°F ·{" "}
                 {zoneFor(hoverPoint.wbgtC).flagLabel}
               </p>
             </div>
@@ -675,22 +773,24 @@ export function HeatTracker() {
         <span className="flex items-center gap-1.5">
           <span className={`h-2.5 w-2.5 rounded-sm ${ZONES[0].swatchClass}`} />
           Green flag — under {cToF(ZONES[0].maxC).toFixed(0)}°F: train as
-          planned
+          planned, easy or hard
         </span>
         <span className="flex items-center gap-1.5">
           <span className={`h-2.5 w-2.5 rounded-sm ${ZONES[1].swatchClass}`} />
           Yellow flag — {cToF(ZONES[0].maxC).toFixed(0)}–
-          {cToF(ZONES[1].maxC).toFixed(0)}°F: ease off intervals and tempo
+          {cToF(ZONES[1].maxC).toFixed(0)}°F: easy runs are fine, ease off
+          intervals and tempo
         </span>
         <span className="flex items-center gap-1.5">
           <span className={`h-2.5 w-2.5 rounded-sm ${ZONES[2].swatchClass}`} />
           Red flag — {cToF(ZONES[1].maxC).toFixed(0)}–
-          {cToF(ZONES[2].maxC).toFixed(0)}°F: move intervals and tempo indoors
+          {cToF(ZONES[2].maxC).toFixed(0)}°F: easy runs by effort only,
+          intervals and tempo move indoors
         </span>
         <span className="flex items-center gap-1.5">
           <span className={`h-2.5 w-2.5 rounded-sm ${ZONES[3].swatchClass}`} />
-          Black flag — above {cToF(ZONES[2].maxC).toFixed(0)}°F: skip outdoor
-          training
+          Black flag — above {cToF(ZONES[2].maxC).toFixed(0)}°F: skip
+          outdoor training, easy or hard
         </span>
       </div>
 
