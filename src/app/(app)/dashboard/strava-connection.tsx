@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { disconnectStrava } from "@/app/(app)/dashboard/strava-actions";
+import { SyncStravaButton } from "@/app/(app)/dashboard/sync-strava-button";
 
 type StravaConnectionProps = {
   connected: boolean;
@@ -15,17 +16,20 @@ export function StravaConnection({ connected }: StravaConnectionProps) {
       {connected ? (
         <>
           <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-200">
-            Connected. Syncing activities into race results and workouts is
-            coming in a later update.
+            Connected. Sync pulls in recent runs and matches them to
+            scheduled workouts by date.
           </p>
-          <form action={disconnectStrava} className="mt-3">
-            <button
-              type="submit"
-              className="rounded-full border border-black/10 px-4 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-black/5 dark:border-white/10 dark:text-zinc-200 dark:hover:bg-white/10"
-            >
-              Disconnect
-            </button>
-          </form>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <SyncStravaButton />
+            <form action={disconnectStrava}>
+              <button
+                type="submit"
+                className="rounded-full border border-black/10 px-4 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-black/5 dark:border-white/10 dark:text-zinc-200 dark:hover:bg-white/10"
+              >
+                Disconnect
+              </button>
+            </form>
+          </div>
         </>
       ) : (
         <>
