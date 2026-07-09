@@ -1,0 +1,70 @@
+import type { Metadata } from "next";
+
+import { createServiceRoleClient } from "@/lib/db/service-role";
+import { formatRelativeTime } from "@/lib/format";
+import { CreateInviteForm } from "./create-invite-form";
+
+export const metadata: Metadata = {
+  title: "Admin",
+};
+
+type CoachInvite = {
+  id: string;
+  email: string;
+  created_at: string;
+  redeemed_at: string | null;
+};
+
+export default async function AdminPage() {
+  // coach_invites has zero RLS policies for authenticated/anon by design
+  // (see the access-control migration) -- this page is already gated on
+  // isAdmin by admin/layout.tsx, so the service-role read here is safe.
+  const admin = createServiceRoleClient();
+  const { data: invites } = await admin
+    .from("coach_invites")
+    .select("id, email, created_at, redeemed_at")
+    .order("created_at", { ascending: false })
+    .returns<CoachInvite[]>();
+
+  return (
+    <section className="mx-auto w-full max-w-3xl px-6 py-16 animate-fade-in">
+      <h1 className="text-4xl leading-tight font-semibold tracking-tight sm:text-5xl">Admin</h1>
+      <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-600 dark:text-zinc-300">
+        Invite coaches. Athletes with an @brophybroncos.org email join automatically, no invite needed.
+      </p>
+
+      <div className="mt-10 space-y-8">
+        <CreateInviteForm />
+
+        <div>
+          <p className="text-xs font-semibold tracking-wide text-zinc-600 uppercase dark:text-zinc-300">
+            Coach invites
+          </p>
+          {invites && invites.length > 0 ? (
+            <div className="mt-3 space-y-2">
+              {invites.map((invite) => (
+                <div
+                  key={invite.id}
+                  className="flex items-center justify-between rounded-xl border border-black/10 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-zinc-900"
+                >
+                  <span className="font-medium text-zinc-900 dark:text-white">{invite.email}</span>
+                  <span className="text-zinc-600 dark:text-zinc-300">
+                    {invite.redeemed_at ? (
+                      <span className="text-emerald-700 dark:text-emerald-400">
+                        Redeemed {formatRelativeTime(invite.redeemed_at)}
+                      </span>
+                    ) : (
+                      <span>Created {formatRelativeTime(invite.created_at)} · pending</span>
+                    )}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">No invites yet.</p>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}

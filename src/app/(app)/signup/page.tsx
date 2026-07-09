@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { signUp } from "@/app/(app)/auth-actions";
+import { resolveInvite } from "./invite-actions";
 import { AuthForm } from "@/components/auth-form";
 import { GoogleSignInButton } from "@/components/oauth-buttons";
 
@@ -9,16 +10,29 @@ export const metadata: Metadata = {
   title: "Sign up",
 };
 
-export default function SignupPage() {
+type SignupPageProps = {
+  searchParams: Promise<{ invite?: string }>;
+};
+
+export default async function SignupPage({ searchParams }: SignupPageProps) {
+  const { invite: inviteToken } = await searchParams;
+  const invite = inviteToken ? await resolveInvite(inviteToken) : null;
+
   return (
     <section className="mx-auto w-full max-w-sm px-6 py-16 animate-fade-in">
       <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-        Sign up
+        {invite ? "Set up your coach account" : "Sign up"}
       </h1>
       <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">
-        Free to create. Your calculator results stay yours to export or
-        delete at any time.
+        {invite
+          ? "You've been invited to coach on The Haarchive. Finish setting up your account below."
+          : "Free to create. Your calculator results stay yours to export or delete at any time."}
       </p>
+      {inviteToken && !invite && (
+        <p role="alert" className="mt-3 text-sm font-medium text-red-700 dark:text-red-400">
+          That invite link isn&rsquo;t valid or has already been used.
+        </p>
+      )}
 
       <div className="mt-8">
         <GoogleSignInButton />
@@ -37,6 +51,8 @@ export default function SignupPage() {
           pendingLabel="Signing up…"
           passwordAutoComplete="new-password"
           passwordMinLength={8}
+          defaultEmail={invite?.email}
+          emailReadOnly={!!invite}
           footer={
             <p className="text-sm text-zinc-600 dark:text-zinc-300">
               Already have an account?{" "}

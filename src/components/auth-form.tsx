@@ -20,6 +20,8 @@ type AuthFormProps = {
   passwordAutoComplete: "current-password" | "new-password";
   passwordMinLength?: number;
   footer: ReactNode;
+  defaultEmail?: string;
+  emailReadOnly?: boolean;
 };
 
 export function AuthForm({
@@ -29,6 +31,8 @@ export function AuthForm({
   passwordAutoComplete,
   passwordMinLength,
   footer,
+  defaultEmail,
+  emailReadOnly,
 }: AuthFormProps) {
   const [state, formAction, isPending] = useActionState(action, {});
 
@@ -44,7 +48,9 @@ export function AuthForm({
           type="email"
           autoComplete="email"
           required
-          className={fieldClass}
+          defaultValue={defaultEmail}
+          readOnly={emailReadOnly}
+          className={`${fieldClass} ${emailReadOnly ? "opacity-70" : ""}`}
         />
       </div>
       <div>
