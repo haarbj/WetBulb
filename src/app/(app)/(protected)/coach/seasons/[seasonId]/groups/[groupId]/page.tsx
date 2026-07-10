@@ -5,7 +5,9 @@ import { addDays } from "@/lib/coaching-engine";
 import { createClient } from "@/lib/db/server";
 import { getAppSession } from "@/lib/auth/session";
 import { ensureGroupPlan } from "@/app/(app)/(protected)/coach/group-plans-actions";
-import { ScheduleBuilder, type WeekRange, type Workout } from "./schedule-builder";
+import type { GroupDayEntries } from "./all-groups-day-view";
+import type { WeekRange, Workout } from "./schedule-builder";
+import { ViewToggle } from "./view-toggle";
 
 export const metadata: Metadata = {
   title: "Group Schedule",
@@ -92,6 +94,49 @@ export default async function GroupSchedulePage({ params }: PageProps) {
   }
   weekRanges.sort((a, b) => a.weekIndex - b.weekIndex);
 
+  // Cross-group day view: every group's own group_plans row for this
+  // season (if they have one yet) and their workouts, re-shaped into
+  // date -> group -> entries for the read-only "everyone, by day" toggle.
+  const otherGroups = (allGroups ?? []).filter((g) => g.id !== groupId);
+  const { data: allGroupPlans } = await supabase
+    .from("group_plans")
+    .select("id, group_id")
+    .eq("season_plan_id", seasonId)
+    .returns<{ id: string; group_id: string }[]>();
+
+  const groupPlanIds = (allGroupPlans ?? []).map((gp) => gp.id);
+  const { data: allWorkouts } = groupPlanIds.length
+    ? await supabase
+        .from("group_plan_workouts")
+        .select("*")
+        .in("group_plan_id", groupPlanIds)
+        .order("scheduled_date", { ascending: true })
+        .returns<Workout[]>()
+    : { data: [] as Workout[] };
+
+  const groupIdByPlanId = new Map((allGroupPlans ?? []).map((gp) => [gp.id, gp.group_id]));
+  const groupNameById = new Map((allGroups ?? []).map((g) => [g.id, g.name]));
+  const workoutsByGroupThenDate = new Map<string, Map<string, Workout[]>>();
+  const dateSet = new Set<string>();
+  for (const w of allWorkouts ?? []) {
+    const gid = groupIdByPlanId.get(w.group_plan_id);
+    if (!gid) continue;
+    dateSet.add(w.scheduled_date);
+    if (!workoutsByGroupThenDate.has(gid)) workoutsByGroupThenDate.set(gid, new Map());
+    const byDate = workoutsByGroupThenDate.get(gid)!;
+    const list = byDate.get(w.scheduled_date) ?? [];
+    list.push(w);
+    byDate.set(w.scheduled_date, list);
+  }
+  const allGroupsDayData = {
+    dates: Array.from(dateSet).sort(),
+    groups: (allGroups ?? []).map((g): GroupDayEntries => ({
+      groupId: g.id,
+      groupName: groupNameById.get(g.id) ?? g.name,
+      workoutsByDate: Object.fromEntries(workoutsByGroupThenDate.get(g.id) ?? new Map()),
+    })),
+  };
+
   return (
     <section className="mx-auto w-full max-w-3xl px-6 py-16 animate-fade-in">
       <h1 className="text-4xl leading-tight font-semibold tracking-tight sm:text-5xl">{group.name}</h1>
@@ -100,12 +145,13 @@ export default async function GroupSchedulePage({ params }: PageProps) {
       </p>
 
       <div className="mt-10">
-        <ScheduleBuilder
+        <ViewToggle
           seasonId={seasonId}
           groupPlanId={groupPlanId}
           weekRanges={weekRanges}
           workouts={workouts ?? []}
-          otherGroups={(allGroups ?? []).filter((g) => g.id !== groupId)}
+          otherGroups={otherGroups}
+          allGroupsDayData={allGroupsDayData}
         />
       </div>
     </section>

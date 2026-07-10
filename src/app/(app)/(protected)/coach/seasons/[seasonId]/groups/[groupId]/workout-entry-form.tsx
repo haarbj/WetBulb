@@ -2,7 +2,11 @@
 
 import { useId, useState } from "react";
 
-import { upsertGroupPlanWorkout, type WorkoutInput } from "@/app/(app)/(protected)/coach/group-plans-actions";
+import {
+  createWorkoutForGroups,
+  upsertGroupPlanWorkout,
+  type WorkoutInput,
+} from "@/app/(app)/(protected)/coach/group-plans-actions";
 import { workoutTypeLabel } from "@/app/(app)/(protected)/plan/format-workout";
 import { fieldClass, labelClass } from "@/app/(app)/(protected)/dashboard/form-constants";
 import type { WorkoutType } from "@/lib/coaching-engine";
@@ -31,14 +35,25 @@ function minSecPerMileToSecPerMile(value: string): number | null {
 
 type WorkoutEntryFormProps = {
   groupPlanId: string;
+  seasonId: string;
   scheduledDate: string;
   seasonPhaseId: string | null;
   existing?: Workout;
+  otherGroups: { id: string; name: string }[];
   onDone: () => void;
   onCancel: () => void;
 };
 
-export function WorkoutEntryForm({ groupPlanId, scheduledDate, seasonPhaseId, existing, onDone, onCancel }: WorkoutEntryFormProps) {
+export function WorkoutEntryForm({
+  groupPlanId,
+  seasonId,
+  scheduledDate,
+  seasonPhaseId,
+  existing,
+  otherGroups,
+  onDone,
+  onCancel,
+}: WorkoutEntryFormProps) {
   const baseId = useId();
   const [timeOfDay, setTimeOfDay] = useState(existing?.time_of_day ?? "");
   const [location, setLocation] = useState(existing?.location ?? "");
@@ -55,8 +70,23 @@ export function WorkoutEntryForm({ groupPlanId, scheduledDate, seasonPhaseId, ex
   const [paceFast, setPaceFast] = useState(paceToMinSecPerMile(existing?.pace_fast_sec_per_mile ?? null));
   const [paceSlow, setPaceSlow] = useState(paceToMinSecPerMile(existing?.pace_slow_sec_per_mile ?? null));
 
+  // Create-only: "also add to these groups" -- one submission creates an
+  // independent row in each selected group, matching copyWorkoutToGroups'
+  // shape but without a create-then-copy round trip. Collapsed/empty by
+  // default, so the ordinary case (one group) is completely unaffected.
+  const [alsoAddToGroups, setAlsoAddToGroups] = useState<Set<string>>(new Set());
+
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function toggleAlsoAddTo(groupId: string) {
+    setAlsoAddToGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      return next;
+    });
+  }
 
   async function handleSubmit() {
     setError(null);
@@ -80,7 +110,10 @@ export function WorkoutEntryForm({ groupPlanId, scheduledDate, seasonPhaseId, ex
     };
 
     setIsPending(true);
-    const result = await upsertGroupPlanWorkout(input);
+    const result =
+      !existing && alsoAddToGroups.size > 0
+        ? await createWorkoutForGroups(input, seasonId, Array.from(alsoAddToGroups))
+        : await upsertGroupPlanWorkout(input);
     setIsPending(false);
     if (result.error) return setError(result.error);
     onDone();
@@ -240,6 +273,28 @@ export function WorkoutEntryForm({ groupPlanId, scheduledDate, seasonPhaseId, ex
                 className={`${fieldClass} w-28`}
               />
             </div>
+          </div>
+        </div>
+      )}
+
+      {!existing && otherGroups.length > 0 && (
+        <div className="rounded-lg border border-black/10 p-3 dark:border-white/10">
+          <p className={labelClass}>Also add to other groups</p>
+          <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+            Separate by default -- check a group to give it this same session as its own entry (like an
+            &ldquo;All&rdquo; row), editable independently afterward.
+          </p>
+          <div className="mt-2 flex flex-wrap gap-3">
+            {otherGroups.map((g) => (
+              <label key={g.id} className="flex items-center gap-1.5 text-sm text-zinc-700 dark:text-zinc-200">
+                <input
+                  type="checkbox"
+                  checked={alsoAddToGroups.has(g.id)}
+                  onChange={() => toggleAlsoAddTo(g.id)}
+                />
+                {g.name}
+              </label>
+            ))}
           </div>
         </div>
       )}

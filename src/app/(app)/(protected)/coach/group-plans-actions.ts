@@ -141,6 +141,56 @@ export async function upsertGroupPlanWorkout(input: WorkoutInput): Promise<Actio
   return {};
 }
 
+// Create-only: inserts the same entry into the primary group's plan plus
+// any additional groups selected in the form, in one submission -- the
+// "vertical row spanning several groups" case (a meet, an "All" session)
+// without create-then-separately-copy. Each group ends up with its own
+// independent row (matches copyWorkoutToGroups), not one row shared across
+// groups, so publish state and later edits stay per-group.
+export async function createWorkoutForGroups(
+  input: WorkoutInput,
+  seasonId: string,
+  additionalGroupIds: string[],
+): Promise<ActionState> {
+  const session = await getAppSession();
+  if (session?.role !== "coach" || !session.teamId) return { error: "Not authorized." };
+  if (!input.description.trim()) return { error: "Enter a description for this session." };
+
+  const supabase = await createClient();
+  const baseRow = {
+    team_id: session.teamId,
+    season_phase_id: input.seasonPhaseId,
+    scheduled_date: input.scheduledDate,
+    time_of_day: input.timeOfDay,
+    location: input.location,
+    description: input.description.trim(),
+    secondary_activity: input.secondaryActivity,
+    workout_type: input.workoutType,
+    distance_m: input.distanceM,
+    pace_fast_sec_per_mile: input.paceFastSecPerMile,
+    pace_slow_sec_per_mile: input.paceSlowSecPerMile,
+    is_race: input.isRace,
+    notes: input.notes,
+  };
+
+  const { error: primaryError } = await supabase
+    .from("group_plan_workouts")
+    .insert({ ...baseRow, group_plan_id: input.groupPlanId });
+  if (primaryError) return { error: primaryError.message };
+
+  for (const groupId of additionalGroupIds) {
+    const { groupPlanId, error: ensureError } = await ensureGroupPlan(seasonId, groupId);
+    if (ensureError || !groupPlanId) return { error: ensureError ?? "Couldn't set up an additional group's schedule." };
+    const { error: insertError } = await supabase
+      .from("group_plan_workouts")
+      .insert({ ...baseRow, group_plan_id: groupPlanId });
+    if (insertError) return { error: insertError.message };
+  }
+
+  revalidatePath("/coach/seasons", "layout");
+  return {};
+}
+
 export async function deleteGroupPlanWorkout(workoutId: string): Promise<ActionState> {
   const session = await getAppSession();
   if (session?.role !== "coach") return { error: "Not authorized." };

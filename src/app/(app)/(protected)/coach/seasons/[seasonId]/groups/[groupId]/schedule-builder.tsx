@@ -285,8 +285,10 @@ function WeekSection({
                   <WorkoutEntryForm
                     key={workout.id}
                     groupPlanId={groupPlanId}
+                    seasonId={seasonId}
                     scheduledDate={date}
                     seasonPhaseId={week.phaseId}
+                    otherGroups={otherGroups}
                     existing={workout}
                     onDone={refresh}
                     onCancel={() => setEditingId(null)}
@@ -305,8 +307,10 @@ function WeekSection({
               {addingDate === date ? (
                 <WorkoutEntryForm
                   groupPlanId={groupPlanId}
+                  seasonId={seasonId}
                   scheduledDate={date}
                   seasonPhaseId={week.phaseId}
+                  otherGroups={otherGroups}
                   onDone={refresh}
                   onCancel={() => setAddingDate(null)}
                 />
