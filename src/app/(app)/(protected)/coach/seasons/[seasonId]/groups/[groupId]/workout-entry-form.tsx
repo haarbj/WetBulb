@@ -97,7 +97,7 @@ export function WorkoutEntryForm({ groupPlanId, scheduledDate, seasonPhaseId, ex
             id={`${baseId}-time`}
             value={timeOfDay}
             onChange={(e) => setTimeOfDay(e.target.value)}
-            placeholder="e.g. 6:00am, OYO"
+            placeholder="e.g. 6:00am"
             className={`${fieldClass} w-32`}
           />
         </div>
@@ -109,7 +109,7 @@ export function WorkoutEntryForm({ groupPlanId, scheduledDate, seasonPhaseId, ex
             id={`${baseId}-location`}
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="e.g. Loyola Basement"
+            placeholder="e.g. Loyola Basement, OYO"
             className={`${fieldClass} w-56`}
           />
         </div>

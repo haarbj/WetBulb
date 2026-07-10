@@ -84,16 +84,27 @@ export function MembershipRoster({
   groupId,
   athletes,
   memberIds,
+  otherGroupNamesByAthlete,
 }: {
   groupId: string;
   athletes: Athlete[];
   memberIds: string[];
+  otherGroupNamesByAthlete: Record<string, string[]>;
 }) {
   const [members, setMembers] = useState(new Set(memberIds));
   const [isPending, startTransition] = useTransition();
 
-  function toggle(athleteId: string) {
+  function toggle(athleteId: string, athleteName: string) {
     const isMember = members.has(athleteId);
+    if (!isMember) {
+      const otherNames = otherGroupNamesByAthlete[athleteId] ?? [];
+      if (otherNames.length > 0) {
+        const proceed = window.confirm(
+          `${athleteName} is already in ${otherNames.join(", ")}. Add them to this group too?`,
+        );
+        if (!proceed) return;
+      }
+    }
     startTransition(async () => {
       if (isMember) {
         await removeAthleteFromGroup(groupId, athleteId);
@@ -121,7 +132,7 @@ export function MembershipRoster({
             type="checkbox"
             checked={members.has(athlete.id)}
             disabled={isPending}
-            onChange={() => toggle(athlete.id)}
+            onChange={() => toggle(athlete.id, athlete.display_name)}
           />
           {athlete.display_name}
         </label>

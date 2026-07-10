@@ -25,15 +25,33 @@ export default async function GroupDetailPage({ params }: GroupDetailPageProps) 
   const { data: group } = await supabase.from("groups").select("id, name").eq("id", groupId).maybeSingle<Group>();
   if (!group) notFound();
 
-  const [{ data: teamMemberships }, { data: groupMemberships }] = await Promise.all([
+  const [{ data: teamMemberships }, { data: groupMemberships }, { data: otherGroups }] = await Promise.all([
     supabase.from("team_memberships").select("user_id").eq("team_id", session!.teamId!).eq("role", "athlete").returns<Membership[]>(),
     supabase.from("group_memberships").select("user_id").eq("group_id", groupId).returns<Membership[]>(),
+    supabase.from("groups").select("id, name").eq("team_id", session!.teamId!).neq("id", groupId).returns<Group[]>(),
   ]);
 
   const athleteIds = teamMemberships?.map((m) => m.user_id) ?? [];
   const { data: profiles } = athleteIds.length
     ? await supabase.from("profiles").select("id, display_name").in("id", athleteIds).order("display_name").returns<Profile[]>()
     : { data: [] as Profile[] };
+
+  // For the multi-group warning: which OTHER groups (by name) is each
+  // athlete already in, so the roster checkbox can name them before the
+  // coach adds a second one.
+  const otherGroupIds = (otherGroups ?? []).map((g) => g.id);
+  const { data: otherMemberships } = otherGroupIds.length
+    ? await supabase.from("group_memberships").select("user_id, group_id").in("group_id", otherGroupIds).returns<{ user_id: string; group_id: string }[]>()
+    : { data: [] as { user_id: string; group_id: string }[] };
+  const otherGroupNameById = new Map((otherGroups ?? []).map((g) => [g.id, g.name]));
+  const otherGroupNamesByAthlete = new Map<string, string[]>();
+  for (const m of otherMemberships ?? []) {
+    const name = otherGroupNameById.get(m.group_id);
+    if (!name) continue;
+    const list = otherGroupNamesByAthlete.get(m.user_id) ?? [];
+    list.push(name);
+    otherGroupNamesByAthlete.set(m.user_id, list);
+  }
 
   return (
     <section className="mx-auto w-full max-w-2xl px-6 py-16 animate-fade-in">
@@ -54,6 +72,7 @@ export default async function GroupDetailPage({ params }: GroupDetailPageProps) 
             groupId={group.id}
             athletes={profiles ?? []}
             memberIds={(groupMemberships ?? []).map((m) => m.user_id)}
+            otherGroupNamesByAthlete={Object.fromEntries(otherGroupNamesByAthlete)}
           />
         </div>
       </div>
