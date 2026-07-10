@@ -48,6 +48,12 @@ export default async function CoachPage() {
         >
           View roster
         </Link>
+        <Link
+          href="/coach/groups"
+          className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-black/5 dark:border-white/10 dark:text-zinc-200 dark:hover:bg-white/10"
+        >
+          Groups
+        </Link>
       </div>
 
       <div className="mt-10">
