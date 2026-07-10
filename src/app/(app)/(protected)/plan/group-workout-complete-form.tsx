@@ -9,7 +9,7 @@ import { fieldClass, labelClass } from "@/app/(app)/(protected)/dashboard/form-c
 // notes) -- a coach-authored group session has no prescription to compare
 // actuals against, but the log matters just as much as it does for a
 // self-generated plan.
-export function GroupWorkoutCompleteForm({ workoutId }: { workoutId: string }) {
+export function GroupWorkoutCompleteForm({ workoutId, isRace = false }: { workoutId: string; isRace?: boolean }) {
   const baseId = useId();
   const [state, formAction, isPending] = useActionState(
     (_prevState: { error?: string }, formData: FormData) => logGroupWorkoutCompletion(workoutId, formData),
@@ -60,7 +60,7 @@ export function GroupWorkoutCompleteForm({ workoutId }: { workoutId: string }) {
         disabled={isPending}
         className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-700 disabled:opacity-60 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
       >
-        {isPending ? "Saving…" : "Mark complete"}
+        {isPending ? "Saving…" : isRace ? "Log your race result" : "Mark complete"}
       </button>
       {state.error && (
         <p role="alert" className="w-full text-sm font-medium text-red-700 dark:text-red-400">

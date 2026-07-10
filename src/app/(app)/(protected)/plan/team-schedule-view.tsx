@@ -1,9 +1,11 @@
 import { createClient } from "@/lib/db/server";
-import { formatDate } from "@/lib/format";
+import { formatClock, formatDate } from "@/lib/format";
 import { CompletionSummary, type CompletionDetail } from "./completion-detail";
 import { workoutTypeLabel } from "./format-workout";
 import { GroupWorkoutCompleteForm, UndoGroupCompletionButton } from "./group-workout-complete-form";
 import type { WorkoutType } from "@/lib/coaching-engine";
+
+type AthleteGoal = { race_name: string; distance_m: number; goal_time_s: number | null };
 
 type GroupPlanWorkout = {
   id: string;
@@ -31,11 +33,13 @@ function GroupWorkoutRow({
   completion,
   showCompleteForm,
   showPublishState,
+  athleteGoal,
 }: {
   workout: GroupPlanWorkout;
   completion: CompletionDetail | null;
   showCompleteForm: boolean;
   showPublishState: boolean;
+  athleteGoal: AthleteGoal | null;
 }) {
   return (
     <div className="rounded-xl border border-black/10 bg-white p-4 dark:border-white/10 dark:bg-zinc-900">
@@ -59,6 +63,12 @@ function GroupWorkoutRow({
               {workout.pace_fast_sec_per_mile &&
                 workout.pace_slow_sec_per_mile &&
                 `${formatMinSecPerMile(workout.pace_fast_sec_per_mile)}–${formatMinSecPerMile(workout.pace_slow_sec_per_mile)}/mi`}
+            </p>
+          )}
+          {workout.is_race && athleteGoal && (
+            <p className="mt-0.5 text-xs font-medium text-indigo-700 dark:text-indigo-400">
+              Your goal: {athleteGoal.race_name}
+              {athleteGoal.goal_time_s ? `, ${formatClock(athleteGoal.goal_time_s)}` : ""}
             </p>
           )}
           {workout.notes && <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-400">{workout.notes}</p>}
@@ -85,7 +95,7 @@ function GroupWorkoutRow({
             <UndoGroupCompletionButton workoutId={workout.id} />
           </div>
         ) : (
-          <GroupWorkoutCompleteForm workoutId={workout.id} />
+          <GroupWorkoutCompleteForm workoutId={workout.id} isRace={workout.is_race} />
         ))}
     </div>
   );
@@ -179,6 +189,15 @@ export async function TeamScheduleView({ userId, coachView = false }: { userId: 
     : { data: [] };
   const completionByWorkoutId = new Map((completions ?? []).map((c) => [c.group_plan_workout_id, c]));
 
+  const { data: athleteGoal } = await supabase
+    .from("goals")
+    .select("race_name, distance_m, goal_time_s")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<AthleteGoal>();
+
   return (
     <div>
       <p className="text-xs font-semibold tracking-wide text-zinc-600 uppercase dark:text-zinc-300">
@@ -193,6 +212,7 @@ export async function TeamScheduleView({ userId, coachView = false }: { userId: 
               completion={completionByWorkoutId.get(workout.id) ?? null}
               showCompleteForm={!coachView && workout.scheduled_date <= today}
               showPublishState={coachView}
+              athleteGoal={athleteGoal ?? null}
             />
           ))
         ) : (
