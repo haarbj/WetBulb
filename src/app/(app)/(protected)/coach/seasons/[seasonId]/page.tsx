@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { createClient } from "@/lib/db/server";
@@ -50,6 +51,13 @@ export default async function SeasonDetailPage({ params }: SeasonDetailPageProps
     : { data: [] as Profile[] };
   const athletes = (rosterProfiles ?? []).map((p) => ({ id: p.id, display_name: p.display_name }));
 
+  const { data: groups } = await supabase
+    .from("groups")
+    .select("id, name")
+    .eq("team_id", session!.teamId!)
+    .order("name", { ascending: true })
+    .returns<{ id: string; name: string }[]>();
+
   const [{ data: phases }, { data: weeks }] = await Promise.all([
     supabase
       .from("season_phases")
@@ -72,7 +80,29 @@ export default async function SeasonDetailPage({ params }: SeasonDetailPageProps
         Building toward {season.goal_race_name} on {formatDate(season.goal_race_date)}.
       </p>
 
-      <div className="mt-10">
+      <div className="mt-10 rounded-2xl border border-black/10 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900">
+        <p className="text-sm font-semibold text-zinc-900 dark:text-white">Group schedules</p>
+        {groups && groups.length > 0 ? (
+          <div className="mt-3 space-y-2">
+            {groups.map((group) => (
+              <Link
+                key={group.id}
+                href={`/coach/seasons/${seasonId}/groups/${group.id}`}
+                className="block rounded-xl border border-black/10 px-4 py-2.5 text-sm font-medium text-zinc-900 transition hover:border-black/20 dark:border-white/10 dark:text-white dark:hover:border-white/20"
+              >
+                {group.name}
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
+            No groups yet — <Link href="/coach/groups" className="underline">create one</Link> to start building a
+            schedule.
+          </p>
+        )}
+      </div>
+
+      <div className="mt-8">
         <RosterGeneratePanel seasonId={seasonId} athletes={athletes} />
       </div>
 
