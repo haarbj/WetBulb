@@ -23,6 +23,11 @@ export type WorkoutContext = {
   scheduledDate: string;
   phase: MesocyclePhase | null;
   focusNotes: string | null;
+  // Populated only when this workout's mesocycle is linked to a coach's
+  // season blueprint (season_phases) -- null for any self-serve athlete
+  // without a season, which must keep working exactly as before.
+  displayPhaseName: string | null;
+  phasePrimaryGoal: string | null;
 };
 
 export type CompletionSummary = {
@@ -86,15 +91,30 @@ export async function assembleCoachingContext(
   if (workoutRow) {
     const { data: mesocycleRow } = await supabase
       .from("mesocycles")
-      .select("phase, focus_notes")
+      .select("phase, focus_notes, season_phase_id")
       .eq("id", workoutRow.mesocycle_id)
       .maybeSingle();
+
+    let displayPhaseName: string | null = null;
+    let phasePrimaryGoal: string | null = null;
+    if (mesocycleRow?.season_phase_id) {
+      const { data: seasonPhaseRow } = await supabase
+        .from("season_phases")
+        .select("display_name, primary_goal")
+        .eq("id", mesocycleRow.season_phase_id)
+        .maybeSingle();
+      displayPhaseName = seasonPhaseRow?.display_name ?? null;
+      phasePrimaryGoal = seasonPhaseRow?.primary_goal || null;
+    }
+
     workout = {
       workoutType: workoutRow.workout_type,
       prescription: workoutRow.prescription,
       scheduledDate: workoutRow.scheduled_date,
       phase: mesocycleRow?.phase ?? null,
       focusNotes: mesocycleRow?.focus_notes ?? null,
+      displayPhaseName,
+      phasePrimaryGoal,
     };
   }
 

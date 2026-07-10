@@ -83,6 +83,8 @@ describe("buildSystemPrompt", () => {
         scheduledDate: "2026-07-15",
         phase: "build",
         focusNotes: "Add tempo work on top of the base you've built.",
+        displayPhaseName: null,
+        phasePrimaryGoal: null,
       },
       recentCompletions: [],
       recentCheckin: null,
@@ -92,6 +94,34 @@ describe("buildSystemPrompt", () => {
     expect(prompt).toMatch(/"tempo" session/);
     expect(prompt).toContain("Training phase: build");
     expect(prompt).toContain("Add tempo work on top of the base you've built.");
+  });
+
+  it("instructs the model to respond in the structured GOAL/WHY/FEEL/MISTAKE/RECOVERY format", () => {
+    const prompt = buildSystemPrompt(EMPTY_CONTEXT, []);
+    expect(prompt).toMatch(/GOAL:/);
+    expect(prompt).toMatch(/WHY:/);
+    expect(prompt).toMatch(/FEEL:/);
+    expect(prompt).toMatch(/MISTAKE:/);
+    expect(prompt).toMatch(/RECOVERY:/);
+    expect(prompt).toMatch(/lydiard/i);
+  });
+
+  it("surfaces a season phase's display name and primary goal when the workout has one", () => {
+    const context: CoachingContext = {
+      ...EMPTY_CONTEXT,
+      workout: {
+        workoutType: "long",
+        prescription: { kind: "long", distanceM: 16000, paceRangeSecPerKm: [300, 320] },
+        scheduledDate: "2026-08-03",
+        phase: "base",
+        focusNotes: null,
+        displayPhaseName: "Summer Base",
+        phasePrimaryGoal: "Build a durable aerobic foundation before the season starts.",
+      },
+    };
+    const prompt = buildSystemPrompt(context, []);
+    expect(prompt).toContain("Summer Base (base)");
+    expect(prompt).toContain("Build a durable aerobic foundation before the season starts.");
   });
 
   it("includes recent completions and check-in data when present", () => {

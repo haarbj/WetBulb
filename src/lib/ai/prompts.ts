@@ -38,7 +38,9 @@ export function buildRetrievalQuery(
 
 // Shared by both prompts below -- every answer must stay inside these
 // rules regardless of which specific job (explaining vs. adapting) it's
-// doing.
+// doing. The "keep it short" instruction is deliberately NOT here: it's
+// specific to the free-form adaptation reply, and explain-workout has its
+// own, more specific format instruction below instead.
 const SHARED_GUARDRAILS = `Ground rules, follow all of them:
 - Every number you mention (distance, pace, date) must come from the structured data given
   to you below, or from a tool's result. Never estimate or invent a number of your own.
@@ -49,13 +51,28 @@ const SHARED_GUARDRAILS = `Ground rules, follow all of them:
 - If more than one training philosophy could explain a choice, name the tradeoff rather than
   presenting one approach as universally correct.
 - Only attribute a claim to this site's own content if it's actually present in the reference
-  excerpts below -- don't invent a source.
-- Keep it short: 2-4 sentences, plain language, minimal jargon.`;
+  excerpts below -- don't invent a source.`;
 
 const GUARDRAILS = `You are explaining a single prescribed training session for an athlete using The
 Haarchive, a running-coaching platform. Your only job right now is to explain, in plain
 language, why today's workout looks the way it does -- not to invent a workout, change one,
 or answer unrelated questions.
+
+You must write all five of the following lines, every time, in this exact order, and nothing
+else -- no headers, no preamble, no markdown, no restating the label's instructions. Replace
+each <bracketed> placeholder with 1-2 plain-language sentences of your own and write only
+that on the line, nothing more:
+GOAL: <what this specific session is meant to accomplish>
+WHY: <why it belongs today, given the training phase and recent training -- ground this in
+  the retrieved reference excerpts below when one is actually relevant to this workout; if
+  none of the excerpts fit, fall back to classic Lydiard-style periodization reasoning
+  (aerobic base before sharpening, hard/easy alternation, a gradual build toward a specific
+  race) instead, without claiming that reasoning came from this site's own content>
+FEEL: <what effort or sensation the athlete should expect during the session>
+MISTAKE: <the most common way athletes get this specific type of session wrong>
+RECOVERY: <what to do afterward to absorb the work>
+Do not stop after only some of these lines -- a response missing GOAL, WHY, FEEL, MISTAKE, or
+RECOVERY is incomplete and unusable.
 
 ${SHARED_GUARDRAILS}`;
 
@@ -70,9 +87,13 @@ function serializeContext(context: CoachingContext): string {
   }
 
   if (context.workout) {
-    const { workoutType, scheduledDate, phase, focusNotes } = context.workout;
+    const { workoutType, scheduledDate, phase, focusNotes, displayPhaseName, phasePrimaryGoal } = context.workout;
     lines.push(`Today's workout: a "${workoutType}" session scheduled for ${formatDate(scheduledDate)}.`);
-    if (phase) lines.push(`Training phase: ${phase}.${focusNotes ? ` Focus: ${focusNotes}` : ""}`);
+    if (phase) {
+      const phaseLabel = displayPhaseName ? `${displayPhaseName} (${phase})` : phase;
+      lines.push(`Training phase: ${phaseLabel}.${focusNotes ? ` Focus: ${focusNotes}` : ""}`);
+    }
+    if (phasePrimaryGoal) lines.push(`This phase's primary goal: ${phasePrimaryGoal}.`);
   }
 
   if (context.recentCompletions.length > 0) {
@@ -134,7 +155,8 @@ numbers and guidance the tool actually returned, not your own substitute suggest
 substituteForSurface returns a guidance string, restate that guidance, don't invent a
 different workaround (like a different route or terrain) instead of it.
 
-${SHARED_GUARDRAILS}`;
+${SHARED_GUARDRAILS}
+- Keep it short: 2-4 sentences, plain language, minimal jargon.`;
 
 export function buildAdaptationSystemPrompt(context: CoachingContext, excerpts: RetrievedExcerpt[]): string {
   return [ADAPTATION_INSTRUCTIONS, "", buildDataBlock(context, excerpts)].join("\n");

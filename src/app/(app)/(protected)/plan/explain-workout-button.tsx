@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { logExplanation } from "@/app/(app)/(protected)/plan/actions";
+import { parseStructuredExplanation, type StructuredExplanation } from "@/lib/ai/parse-explanation";
 import {
   phaseSummary,
   workoutKindCoaching,
@@ -10,6 +11,15 @@ import {
   type MesocyclePhase,
   type WorkoutPrescription,
 } from "@/lib/coaching-engine";
+
+function ExplanationField({ label, text }: { label: string; text: string }) {
+  return (
+    <p className="text-zinc-600 dark:text-zinc-300">
+      <span className="font-semibold text-zinc-900 dark:text-white">{label} </span>
+      {text}
+    </p>
+  );
+}
 
 type ExplainWorkoutButtonProps = {
   workoutId: string;
@@ -24,6 +34,7 @@ export function ExplainWorkoutButton({ workoutId, phase, workoutKind, distanceBu
   const [status, setStatus] = useState<Status>("idle");
   const [opened, setOpened] = useState(false);
   const [explanation, setExplanation] = useState("");
+  const [parsed, setParsed] = useState<StructuredExplanation | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function handleClick() {
@@ -31,6 +42,7 @@ export function ExplainWorkoutButton({ workoutId, phase, workoutKind, distanceBu
     setOpened(true);
     setStatus("loading");
     setExplanation("");
+    setParsed(null);
     setError(null);
 
     try {
@@ -55,6 +67,10 @@ export function ExplainWorkoutButton({ workoutId, phase, workoutKind, distanceBu
         setExplanation(accumulated);
       }
       setStatus("idle");
+      // Parsed only once the stream finishes -- a half-arrived line would
+      // otherwise flicker between structured and raw rendering while it
+      // streams in.
+      setParsed(parseStructuredExplanation(accumulated));
 
       if (conversationId && accumulated) {
         void logExplanation(conversationId, accumulated);
@@ -109,10 +125,17 @@ export function ExplainWorkoutButton({ workoutId, phase, workoutKind, distanceBu
             </>
           )}
           {explanation && (
-            <p className="text-zinc-600 dark:text-zinc-300">
-              <span className="font-semibold text-zinc-900 dark:text-white">Coach&rsquo;s note </span>
-              {explanation}
-            </p>
+            parsed ? (
+              <div className="space-y-2">
+                <ExplanationField label="Goal" text={parsed.goal} />
+                <ExplanationField label="Why today" text={parsed.why} />
+                <ExplanationField label="Feel" text={parsed.feel} />
+                <ExplanationField label="Common mistake" text={parsed.mistake} />
+                <ExplanationField label="Recovery" text={parsed.recovery} />
+              </div>
+            ) : (
+              <ExplanationField label="Coach’s note" text={explanation} />
+            )
           )}
         </div>
       )}

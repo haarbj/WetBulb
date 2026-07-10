@@ -54,6 +54,12 @@ export async function POST(request: Request) {
     model: coachModel,
     system,
     prompt: EXPLAIN_WORKOUT_PROMPT,
+    // The structured GOAL/WHY/FEEL/MISTAKE/RECOVERY format runs noticeably
+    // longer than the old "2-4 sentences" reply -- the provider default cap
+    // was observed truncating real responses mid-FEEL section, which
+    // silently fell back to the raw-text render every time. 700 comfortably
+    // covers all five sections at 1-2 sentences each.
+    maxOutputTokens: 700,
     // Without this, a mid-stream provider error (e.g. a rate limit) is
     // swallowed silently by toTextStreamResponse() rather than surfaced --
     // this at least gets it logged server-side instead of vanishing.
