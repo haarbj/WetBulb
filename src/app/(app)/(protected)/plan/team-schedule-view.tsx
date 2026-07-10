@@ -19,6 +19,7 @@ type GroupPlanWorkout = {
   is_race: boolean;
   notes: string | null;
   published_at: string | null;
+  explanation: string | null;
 };
 
 function formatMinSecPerMile(secPerMile: number): string {
@@ -61,6 +62,12 @@ function GroupWorkoutRow({
             </p>
           )}
           {workout.notes && <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-400">{workout.notes}</p>}
+          {workout.explanation && (
+            <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-300">
+              <span className="font-semibold text-zinc-900 dark:text-white">Why today </span>
+              {workout.explanation}
+            </p>
+          )}
           {showPublishState && !workout.published_at && (
             <p className="mt-0.5 text-xs font-medium text-zinc-400 dark:text-zinc-500">Not published</p>
           )}
@@ -148,7 +155,7 @@ export async function TeamScheduleView({ userId, coachView = false }: { userId: 
 
   let workoutsQuery = supabase
     .from("group_plan_workouts")
-    .select("id, scheduled_date, time_of_day, location, description, secondary_activity, workout_type, distance_m, pace_fast_sec_per_mile, pace_slow_sec_per_mile, is_race, notes, published_at")
+    .select("id, scheduled_date, time_of_day, location, description, secondary_activity, workout_type, distance_m, pace_fast_sec_per_mile, pace_slow_sec_per_mile, is_race, notes, published_at, explanation")
     .eq("group_plan_id", groupPlan.id)
     .gte("scheduled_date", windowStart.toISOString().slice(0, 10))
     .lte("scheduled_date", windowEnd.toISOString().slice(0, 10));

@@ -1,7 +1,10 @@
 "use server";
 
+import { APICallError, generateText } from "ai";
 import { revalidatePath } from "next/cache";
 
+import { buildGroupWorkoutExplanationPrompt } from "@/lib/ai/group-workout-explanation";
+import { coachModel } from "@/lib/ai/model";
 import { createClient } from "@/lib/db/server";
 import { getAppSession } from "@/lib/auth/session";
 import type { WorkoutType } from "@/lib/coaching-engine";
@@ -107,6 +110,7 @@ export type WorkoutInput = {
   paceSlowSecPerMile: number | null;
   isRace: boolean;
   notes: string | null;
+  explanation: string | null;
 };
 
 export async function upsertGroupPlanWorkout(input: WorkoutInput): Promise<ActionState> {
@@ -130,6 +134,7 @@ export async function upsertGroupPlanWorkout(input: WorkoutInput): Promise<Actio
     pace_slow_sec_per_mile: input.paceSlowSecPerMile,
     is_race: input.isRace,
     notes: input.notes,
+    explanation: input.explanation,
   };
 
   const { error } = input.id
@@ -139,6 +144,46 @@ export async function upsertGroupPlanWorkout(input: WorkoutInput): Promise<Actio
 
   revalidatePath("/coach/seasons", "layout");
   return {};
+}
+
+// Fills the explanation textarea for the coach to review/edit/clear before
+// saving -- never called automatically, and never shown to an athlete
+// until the coach explicitly keeps it and saves.
+export async function generateWorkoutExplanation(
+  description: string,
+  workoutType: string | null,
+  seasonPhaseId: string | null,
+): Promise<{ explanation?: string; error?: string }> {
+  const session = await getAppSession();
+  if (session?.role !== "coach") return { error: "Not authorized." };
+  if (!description.trim()) return { error: "Add a description first." };
+
+  const supabase = await createClient();
+  let phaseDisplayName: string | null = null;
+  let phasePrimaryGoal: string | null = null;
+  if (seasonPhaseId) {
+    const { data: phase } = await supabase
+      .from("season_phases")
+      .select("display_name, primary_goal")
+      .eq("id", seasonPhaseId)
+      .maybeSingle();
+    phaseDisplayName = phase?.display_name ?? null;
+    phasePrimaryGoal = phase?.primary_goal ?? null;
+  }
+
+  const prompt = buildGroupWorkoutExplanationPrompt({ description, workoutType, phaseDisplayName, phasePrimaryGoal });
+
+  try {
+    const result = await generateText({ model: coachModel, prompt });
+    return { explanation: result.text.trim() };
+  } catch (err) {
+    const isRateLimited = err instanceof APICallError && err.statusCode === 429;
+    return {
+      error: isRateLimited
+        ? "Getting a lot of requests right now -- try again in a minute, or just write it yourself."
+        : "Couldn't generate an explanation right now -- try again, or just write it yourself.",
+    };
+  }
 }
 
 // Create-only: inserts the same entry into the primary group's plan plus
@@ -171,6 +216,7 @@ export async function createWorkoutForGroups(
     pace_slow_sec_per_mile: input.paceSlowSecPerMile,
     is_race: input.isRace,
     notes: input.notes,
+    explanation: input.explanation,
   };
 
   const { error: primaryError } = await supabase

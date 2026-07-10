@@ -40,6 +40,7 @@ export type Workout = {
   is_race: boolean;
   notes: string | null;
   published_at: string | null;
+  explanation: string | null;
 };
 
 function formatMinSecPerMile(secPerMile: number): string {

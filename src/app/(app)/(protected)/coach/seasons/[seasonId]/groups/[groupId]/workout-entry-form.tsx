@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 
 import {
   createWorkoutForGroups,
+  generateWorkoutExplanation,
   upsertGroupPlanWorkout,
   type WorkoutInput,
 } from "@/app/(app)/(protected)/coach/group-plans-actions";
@@ -62,6 +63,9 @@ export function WorkoutEntryForm({
   const [workoutType, setWorkoutType] = useState<WorkoutType | "">(existing?.workout_type ?? "");
   const [isRace, setIsRace] = useState(existing?.is_race ?? false);
   const [notes, setNotes] = useState(existing?.notes ?? "");
+  const [explanation, setExplanation] = useState(existing?.explanation ?? "");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
 
   const [showDistancePace, setShowDistancePace] = useState(
     !!(existing?.distance_m || existing?.pace_fast_sec_per_mile),
@@ -88,6 +92,16 @@ export function WorkoutEntryForm({
     });
   }
 
+  async function handleGenerateExplanation() {
+    setGenerateError(null);
+    if (!description.trim()) return setGenerateError("Add a description first.");
+    setIsGenerating(true);
+    const result = await generateWorkoutExplanation(description, workoutType || null, seasonPhaseId);
+    setIsGenerating(false);
+    if (result.error) return setGenerateError(result.error);
+    setExplanation(result.explanation ?? "");
+  }
+
   async function handleSubmit() {
     setError(null);
     if (!description.trim()) return setError("Enter a description for this session.");
@@ -107,6 +121,7 @@ export function WorkoutEntryForm({
       paceSlowSecPerMile: showDistancePace ? minSecPerMileToSecPerMile(paceSlow) : null,
       isRace,
       notes: notes.trim() || null,
+      explanation: explanation.trim() || null,
     };
 
     setIsPending(true);
@@ -203,6 +218,31 @@ export function WorkoutEntryForm({
           placeholder="e.g. Bring spikes"
           className={fieldClass}
         />
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between">
+          <label htmlFor={`${baseId}-explanation`} className={labelClass}>
+            Point of the day
+          </label>
+          <button
+            type="button"
+            onClick={handleGenerateExplanation}
+            disabled={isGenerating}
+            className="text-xs font-semibold text-zinc-700 underline decoration-black/20 underline-offset-2 hover:decoration-black disabled:opacity-60 dark:text-zinc-200 dark:decoration-white/20 dark:hover:decoration-white"
+          >
+            {isGenerating ? "Generating…" : "Generate"}
+          </button>
+        </div>
+        <textarea
+          id={`${baseId}-explanation`}
+          value={explanation}
+          onChange={(e) => setExplanation(e.target.value)}
+          rows={3}
+          placeholder="Why this session, what to expect -- generate a starting point, then edit or clear it. Shown to athletes as-is if you keep it."
+          className={fieldClass}
+        />
+        {generateError && <p className="mt-1 text-xs font-medium text-red-700 dark:text-red-400">{generateError}</p>}
       </div>
 
       <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-200">
