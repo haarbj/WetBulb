@@ -171,6 +171,8 @@ export async function completeWorkout(
     actualDistanceInput: formData.get("actualDistanceInput") || undefined,
     actualTimeInput: formData.get("actualTimeInput") || undefined,
     rpeInput: formData.get("rpeInput") || undefined,
+    avgHeartRateInput: formData.get("avgHeartRateInput") || undefined,
+    notesInput: formData.get("notesInput") || undefined,
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Check what you entered" };
@@ -195,6 +197,11 @@ export async function completeWorkout(
     return { error: "RPE must be between 1 and 10" };
   }
 
+  const avgHeartRate = parsed.data.avgHeartRateInput ? Number(parsed.data.avgHeartRateInput) : null;
+  if (parsed.data.avgHeartRateInput && (avgHeartRate === null || Number.isNaN(avgHeartRate) || avgHeartRate <= 0)) {
+    return { error: "Enter your average heart rate as a number" };
+  }
+
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
@@ -208,6 +215,8 @@ export async function completeWorkout(
     actual_distance_m: actualDistanceM,
     actual_time_s: actualTimeS,
     rpe,
+    avg_hr: avgHeartRate,
+    notes: parsed.data.notesInput?.trim() || null,
   });
   if (error) {
     return { error: error.message };
@@ -309,34 +318,80 @@ export async function undoAdaptation(workoutId: string): Promise<ApplyAdaptation
   return {};
 }
 
-export type ToggleGroupCompletionState = { error?: string };
+export type LogGroupCompletionState = { error?: string };
 
-// Deliberately simpler than completeWorkout -- a coach-authored group
-// session is qualitative (free-text description, no distance/pace unless
-// the coach opted in), so there's no prescription to compare actuals
-// against and generate feedback from. Just "did you do it," toggled.
-export async function toggleGroupWorkoutCompletion(
+// Mirrors completeWorkout's fields exactly (distance/time/HR/RPE/notes) --
+// a coach-authored group session has no prescription to compare actuals
+// against (so no auto-generated feedback like the self-serve path gets),
+// but the log itself matters just as much: Lydiard's own case for a
+// running log applies here as much as to a self-generated plan.
+export async function logGroupWorkoutCompletion(
   groupPlanWorkoutId: string,
-  currentlyCompleted: boolean,
-): Promise<ToggleGroupCompletionState> {
+  formData: FormData,
+): Promise<LogGroupCompletionState> {
+  const parsed = completeWorkoutSchema.safeParse({
+    actualDistanceInput: formData.get("actualDistanceInput") || undefined,
+    actualTimeInput: formData.get("actualTimeInput") || undefined,
+    rpeInput: formData.get("rpeInput") || undefined,
+    avgHeartRateInput: formData.get("avgHeartRateInput") || undefined,
+    notesInput: formData.get("notesInput") || undefined,
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check what you entered" };
+
+  const actualDistanceM = parsed.data.actualDistanceInput
+    ? Number(parsed.data.actualDistanceInput) * MILES_TO_METERS
+    : null;
+  if (parsed.data.actualDistanceInput && (actualDistanceM === null || Number.isNaN(actualDistanceM) || actualDistanceM <= 0)) {
+    return { error: "Enter your distance as a number" };
+  }
+
+  const actualTimeS = parsed.data.actualTimeInput ? parseTimeToSeconds(parsed.data.actualTimeInput) : null;
+  if (parsed.data.actualTimeInput && actualTimeS === null) {
+    return { error: "Enter your time as mm:ss or h:mm:ss" };
+  }
+
+  const rpe = parsed.data.rpeInput ? Number(parsed.data.rpeInput) : null;
+  if (parsed.data.rpeInput && (rpe === null || rpe < 1 || rpe > 10)) {
+    return { error: "RPE must be between 1 and 10" };
+  }
+
+  const avgHeartRate = parsed.data.avgHeartRateInput ? Number(parsed.data.avgHeartRateInput) : null;
+  if (parsed.data.avgHeartRateInput && (avgHeartRate === null || Number.isNaN(avgHeartRate) || avgHeartRate <= 0)) {
+    return { error: "Enter your average heart rate as a number" };
+  }
+
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
   if (!userId) return { error: "Your session expired -- sign in again." };
 
-  if (currentlyCompleted) {
-    const { error } = await supabase
-      .from("workout_completions")
-      .delete()
-      .eq("group_plan_workout_id", groupPlanWorkoutId)
-      .eq("user_id", userId);
-    if (error) return { error: error.message };
-  } else {
-    const { error } = await supabase
-      .from("workout_completions")
-      .insert({ group_plan_workout_id: groupPlanWorkoutId, user_id: userId });
-    if (error) return { error: error.message };
-  }
+  const { error } = await supabase.from("workout_completions").insert({
+    group_plan_workout_id: groupPlanWorkoutId,
+    user_id: userId,
+    actual_distance_m: actualDistanceM,
+    actual_time_s: actualTimeS,
+    rpe,
+    avg_hr: avgHeartRate,
+    notes: parsed.data.notesInput?.trim() || null,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath("/plan");
+  return {};
+}
+
+export async function deleteGroupWorkoutCompletion(groupPlanWorkoutId: string): Promise<LogGroupCompletionState> {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
+  if (!userId) return { error: "Your session expired -- sign in again." };
+
+  const { error } = await supabase
+    .from("workout_completions")
+    .delete()
+    .eq("group_plan_workout_id", groupPlanWorkoutId)
+    .eq("user_id", userId);
+  if (error) return { error: error.message };
 
   revalidatePath("/plan");
   return {};

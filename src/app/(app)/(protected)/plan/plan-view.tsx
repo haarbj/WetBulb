@@ -11,6 +11,7 @@ import {
 } from "@/lib/coaching-engine";
 import { createClient } from "@/lib/db/server";
 import { formatDate } from "@/lib/format";
+import { CompletionSummary, type CompletionDetail } from "./completion-detail";
 import { describePrescription, workoutTypeLabel } from "./format-workout";
 import { TeamScheduleView } from "./team-schedule-view";
 import { WorkoutCard } from "./workout-card";
@@ -40,7 +41,7 @@ type WorkoutRow = {
 // parameter, so wiring those up for a coach acting on someone else's
 // workout is real additional scope, not part of this pass). Same
 // information, no interactive controls.
-function ReadOnlyWorkoutRow({ workout, completed }: { workout: WorkoutRow; completed: boolean }) {
+function ReadOnlyWorkoutRow({ workout, completion }: { workout: WorkoutRow; completion: CompletionDetail | null }) {
   const parsed = workoutPrescriptionSchema.safeParse(workout.prescription);
   return (
     <div className="rounded-xl border border-black/10 bg-white p-4 dark:border-white/10 dark:bg-zinc-900">
@@ -52,8 +53,9 @@ function ReadOnlyWorkoutRow({ workout, completed }: { workout: WorkoutRow; compl
           <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-300">
             {parsed.success ? describePrescription(parsed.data) : "Details unavailable"}
           </p>
+          {completion && <CompletionSummary completion={completion} />}
         </div>
-        {completed && (
+        {completion && (
           <span className="shrink-0 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
             Completed
           </span>
@@ -173,10 +175,11 @@ export async function PlanView({ userId, coachView = false }: PlanViewProps) {
   const workoutIds = workouts?.map((w) => w.id) ?? [];
   const { data: completions } = await supabase
     .from("workout_completions")
-    .select("id, workout_id, actual_distance_m, actual_time_s, rpe")
-    .in("workout_id", workoutIds.length > 0 ? workoutIds : ["00000000-0000-0000-0000-000000000000"]);
+    .select("workout_id, actual_distance_m, actual_time_s, rpe, avg_hr, notes")
+    .in("workout_id", workoutIds.length > 0 ? workoutIds : ["00000000-0000-0000-0000-000000000000"])
+    .returns<(CompletionDetail & { workout_id: string })[]>();
 
-  const completedWorkoutIds = new Set((completions ?? []).map((c) => c.workout_id));
+  const completionByWorkoutId = new Map((completions ?? []).map((c) => [c.workout_id, c]));
 
   return (
     <>
@@ -226,14 +229,14 @@ export async function PlanView({ userId, coachView = false }: PlanViewProps) {
               {workouts && workouts.length > 0 ? (
                 workouts.map((workout) =>
                   coachView ? (
-                    <ReadOnlyWorkoutRow key={workout.id} workout={workout} completed={completedWorkoutIds.has(workout.id)} />
+                    <ReadOnlyWorkoutRow key={workout.id} workout={workout} completion={completionByWorkoutId.get(workout.id) ?? null} />
                   ) : (
                     <WorkoutCard
                       key={workout.id}
                       workout={workout}
                       phase={currentMesocycle?.phase ?? null}
                       distanceBucket={bucket}
-                      completed={completedWorkoutIds.has(workout.id)}
+                      completion={completionByWorkoutId.get(workout.id) ?? null}
                     />
                   ),
                 )

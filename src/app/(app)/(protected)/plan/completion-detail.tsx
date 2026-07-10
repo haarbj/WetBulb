@@ -1,0 +1,43 @@
+import { formatClock } from "@/lib/format";
+
+// Shared between the self-serve WorkoutCard, the coach's read-only plan
+// view, and the group-schedule athlete view -- every completion, whichever
+// table it lives in (workout_completions.workout_id or
+// .group_plan_workout_id), has this same shape. Once logged, showing the
+// real detail (not just a "Completed" badge) is the whole point of a
+// running log: "go back and look at how you felt."
+export type CompletionDetail = {
+  actual_distance_m: number | null;
+  actual_time_s: number | null;
+  rpe: number | null;
+  avg_hr: number | null;
+  notes: string | null;
+};
+
+const METERS_PER_MILE = 1609.34;
+
+function formatPace(distanceM: number, timeS: number): string {
+  const miles = distanceM / METERS_PER_MILE;
+  if (miles <= 0) return "";
+  return `${formatClock(timeS / miles)}/mi`;
+}
+
+export function CompletionSummary({ completion }: { completion: CompletionDetail }) {
+  const parts: string[] = [];
+  if (completion.actual_distance_m) parts.push(`${(completion.actual_distance_m / METERS_PER_MILE).toFixed(1)} mi`);
+  if (completion.actual_time_s) parts.push(formatClock(completion.actual_time_s));
+  if (completion.actual_distance_m && completion.actual_time_s) {
+    parts.push(formatPace(completion.actual_distance_m, completion.actual_time_s));
+  }
+  if (completion.avg_hr) parts.push(`${completion.avg_hr}bpm avg`);
+  if (completion.rpe) parts.push(`RPE ${completion.rpe}/10`);
+
+  if (parts.length === 0 && !completion.notes) return null;
+
+  return (
+    <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-300">
+      {parts.length > 0 && <p>{parts.join(" · ")}</p>}
+      {completion.notes && <p className="mt-0.5 italic text-zinc-500 dark:text-zinc-400">&ldquo;{completion.notes}&rdquo;</p>}
+    </div>
+  );
+}

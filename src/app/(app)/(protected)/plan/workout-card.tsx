@@ -13,6 +13,7 @@ import {
 } from "@/lib/coaching-engine";
 import { formatDate } from "@/lib/format";
 import { AdaptWorkoutPanel } from "./adapt-workout-panel";
+import { CompletionSummary, type CompletionDetail } from "./completion-detail";
 import { ExplainWorkoutButton } from "./explain-workout-button";
 import { describePrescription, workoutTypeLabel } from "./format-workout";
 
@@ -28,10 +29,10 @@ type WorkoutCardProps = {
   };
   phase: MesocyclePhase | null;
   distanceBucket: DistanceBucket;
-  completed: boolean;
+  completion: CompletionDetail | null;
 };
 
-export function WorkoutCard({ workout, phase, distanceBucket, completed }: WorkoutCardProps) {
+export function WorkoutCard({ workout, phase, distanceBucket, completion }: WorkoutCardProps) {
   const baseId = useId();
   const [state, formAction, isPending] = useActionState(completeWorkout, {});
 
@@ -49,15 +50,16 @@ export function WorkoutCard({ workout, phase, distanceBucket, completed }: Worko
           <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-300">
             {parsed.success ? describePrescription(parsed.data) : "Details unavailable"}
           </p>
+          {completion && <CompletionSummary completion={completion} />}
         </div>
-        {completed && (
+        {completion && (
           <span className="shrink-0 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
             Completed
           </span>
         )}
       </div>
 
-      {!completed && (
+      {!completion && (
         <form action={formAction} className="mt-4 flex flex-wrap items-end gap-3">
           <input type="hidden" name="workoutId" value={workout.id} />
           <div>
@@ -87,6 +89,19 @@ export function WorkoutCard({ workout, phase, distanceBucket, completed }: Worko
             />
           </div>
           <div>
+            <label htmlFor={`${baseId}-hr`} className={labelClass}>
+              Avg HR
+            </label>
+            <input
+              id={`${baseId}-hr`}
+              name="avgHeartRateInput"
+              type="text"
+              inputMode="numeric"
+              placeholder="optional"
+              className={`${fieldClass} w-24`}
+            />
+          </div>
+          <div>
             <label htmlFor={`${baseId}-rpe`} className={labelClass}>
               RPE
             </label>
@@ -98,6 +113,18 @@ export function WorkoutCard({ workout, phase, distanceBucket, completed }: Worko
                 </option>
               ))}
             </select>
+          </div>
+          <div className="w-full">
+            <label htmlFor={`${baseId}-notes`} className={labelClass}>
+              Notes
+            </label>
+            <input
+              id={`${baseId}-notes`}
+              name="notesInput"
+              type="text"
+              placeholder="How did it feel? Anything worth remembering?"
+              className={fieldClass}
+            />
           </div>
           <button
             type="submit"

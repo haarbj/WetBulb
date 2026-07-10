@@ -16,6 +16,8 @@ export const completeWorkoutSchema = z.object({
   actualDistanceInput: z.string().optional(),
   actualTimeInput: z.string().optional(),
   rpeInput: z.string().optional(),
+  avgHeartRateInput: z.string().optional(),
+  notesInput: z.string().optional(),
 });
 
 export type GeneratePlanInput = z.infer<typeof generatePlanSchema>;

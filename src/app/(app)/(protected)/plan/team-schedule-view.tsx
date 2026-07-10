@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/db/server";
 import { formatDate } from "@/lib/format";
+import { CompletionSummary, type CompletionDetail } from "./completion-detail";
 import { workoutTypeLabel } from "./format-workout";
-import { GroupWorkoutCompleteButton } from "./group-workout-complete-button";
+import { GroupWorkoutCompleteForm, UndoGroupCompletionButton } from "./group-workout-complete-form";
 import type { WorkoutType } from "@/lib/coaching-engine";
 
 type GroupPlanWorkout = {
@@ -26,13 +27,13 @@ function formatMinSecPerMile(secPerMile: number): string {
 
 function GroupWorkoutRow({
   workout,
-  completed,
-  showCompleteButton,
+  completion,
+  showCompleteForm,
   showPublishState,
 }: {
   workout: GroupPlanWorkout;
-  completed: boolean;
-  showCompleteButton: boolean;
+  completion: CompletionDetail | null;
+  showCompleteForm: boolean;
   showPublishState: boolean;
 }) {
   return (
@@ -63,18 +64,22 @@ function GroupWorkoutRow({
           {showPublishState && !workout.published_at && (
             <p className="mt-0.5 text-xs font-medium text-zinc-400 dark:text-zinc-500">Not published</p>
           )}
+          {completion && <CompletionSummary completion={completion} />}
         </div>
-        {completed && (
+        {completion && (
           <span className="shrink-0 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
             Completed
           </span>
         )}
       </div>
-      {showCompleteButton && (
-        <div className="mt-2">
-          <GroupWorkoutCompleteButton workoutId={workout.id} completed={completed} />
-        </div>
-      )}
+      {showCompleteForm &&
+        (completion ? (
+          <div className="mt-2">
+            <UndoGroupCompletionButton workoutId={workout.id} />
+          </div>
+        ) : (
+          <GroupWorkoutCompleteForm workoutId={workout.id} />
+        ))}
     </div>
   );
 }
@@ -160,11 +165,12 @@ export async function TeamScheduleView({ userId, coachView = false }: { userId: 
   const { data: completions } = workoutIds.length
     ? await supabase
         .from("workout_completions")
-        .select("group_plan_workout_id")
+        .select("group_plan_workout_id, actual_distance_m, actual_time_s, rpe, avg_hr, notes")
         .eq("user_id", userId)
         .in("group_plan_workout_id", workoutIds)
+        .returns<(CompletionDetail & { group_plan_workout_id: string })[]>()
     : { data: [] };
-  const completedIds = new Set((completions ?? []).map((c) => c.group_plan_workout_id));
+  const completionByWorkoutId = new Map((completions ?? []).map((c) => [c.group_plan_workout_id, c]));
 
   return (
     <div>
@@ -177,8 +183,8 @@ export async function TeamScheduleView({ userId, coachView = false }: { userId: 
             <GroupWorkoutRow
               key={workout.id}
               workout={workout}
-              completed={completedIds.has(workout.id)}
-              showCompleteButton={!coachView && workout.scheduled_date <= today}
+              completion={completionByWorkoutId.get(workout.id) ?? null}
+              showCompleteForm={!coachView && workout.scheduled_date <= today}
               showPublishState={coachView}
             />
           ))
