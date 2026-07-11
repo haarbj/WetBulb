@@ -257,6 +257,49 @@ export async function createWorkoutForGroups(
   return {};
 }
 
+// Create-only: inserts the same entry on the given date plus the same
+// weekday in every later week of the current phase -- the actual point of
+// friction a coach hits repeatedly ("easy 30 min" every Monday for a whole
+// phase), which nothing else in this file addresses (copyWorkoutToGroups
+// repeats across groups on one date; this repeats across dates in one
+// group). Each week gets its own independent row, editable/deletable on
+// its own afterward, same as every other bulk-insert path here.
+export async function createRepeatingWorkout(
+  input: WorkoutInput,
+  additionalDates: string[],
+): Promise<ActionState> {
+  const session = await getAppSession();
+  if (session?.role !== "coach" || !session.teamId) return { error: "Not authorized." };
+  if (!input.description.trim()) return { error: "Enter a description for this session." };
+
+  const supabase = await createClient();
+  const baseRow = {
+    team_id: session.teamId,
+    group_plan_id: input.groupPlanId,
+    season_phase_id: input.seasonPhaseId,
+    time_of_day: input.timeOfDay,
+    location: input.location,
+    description: input.description.trim(),
+    secondary_activity: input.secondaryActivity,
+    workout_type: input.workoutType,
+    duration_min: input.durationMin,
+    distance_m: input.distanceM,
+    pace_fast_sec_per_mile: input.paceFastSecPerMile,
+    pace_slow_sec_per_mile: input.paceSlowSecPerMile,
+    is_race: input.isRace,
+    notes: input.notes,
+    explanation: input.explanation,
+  };
+
+  const { error } = await supabase.from("group_plan_workouts").insert(
+    [input.scheduledDate, ...additionalDates].map((scheduled_date) => ({ ...baseRow, scheduled_date })),
+  );
+  if (error) return { error: error.message };
+
+  revalidatePath("/coach/seasons", "layout");
+  return {};
+}
+
 export async function deleteGroupPlanWorkout(workoutId: string): Promise<ActionState> {
   const session = await getAppSession();
   if (session?.role !== "coach") return { error: "Not authorized." };

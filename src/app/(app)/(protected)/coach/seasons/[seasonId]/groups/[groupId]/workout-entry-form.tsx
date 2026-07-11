@@ -3,6 +3,7 @@
 import { useId, useState } from "react";
 
 import {
+  createRepeatingWorkout,
   createWorkoutForGroups,
   generateWorkoutExplanation,
   upsertGroupPlanWorkout,
@@ -41,6 +42,7 @@ type WorkoutEntryFormProps = {
   seasonPhaseId: string | null;
   existing?: Workout;
   otherGroups: { id: string; name: string }[];
+  repeatCandidateDates?: string[];
   onDone: () => void;
   onCancel: () => void;
 };
@@ -52,6 +54,7 @@ export function WorkoutEntryForm({
   seasonPhaseId,
   existing,
   otherGroups,
+  repeatCandidateDates = [],
   onDone,
   onCancel,
 }: WorkoutEntryFormProps) {
@@ -80,6 +83,13 @@ export function WorkoutEntryForm({
   // shape but without a create-then-copy round trip. Collapsed/empty by
   // default, so the ordinary case (one group) is completely unaffected.
   const [alsoAddToGroups, setAlsoAddToGroups] = useState<Set<string>>(new Set());
+
+  // Create-only: repeats this same entry on the same weekday for the rest
+  // of the current phase, in this group only -- the actual point of
+  // friction a coach hits every week otherwise. Mutually exclusive with
+  // "also add to other groups" for this first version, to avoid a silent
+  // (dates x groups) combination neither checkbox's copy describes.
+  const [repeatWeekly, setRepeatWeekly] = useState(false);
 
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -128,9 +138,11 @@ export function WorkoutEntryForm({
 
     setIsPending(true);
     const result =
-      !existing && alsoAddToGroups.size > 0
-        ? await createWorkoutForGroups(input, seasonId, Array.from(alsoAddToGroups))
-        : await upsertGroupPlanWorkout(input);
+      !existing && repeatWeekly && repeatCandidateDates.length > 0
+        ? await createRepeatingWorkout(input, repeatCandidateDates)
+        : !existing && alsoAddToGroups.size > 0
+          ? await createWorkoutForGroups(input, seasonId, Array.from(alsoAddToGroups))
+          : await upsertGroupPlanWorkout(input);
     setIsPending(false);
     if (result.error) return setError(result.error);
     onDone();
@@ -265,6 +277,14 @@ export function WorkoutEntryForm({
         This is a race
       </label>
 
+      {!existing && repeatCandidateDates.length > 0 && (
+        <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-200">
+          <input type="checkbox" checked={repeatWeekly} onChange={(e) => setRepeatWeekly(e.target.checked)} />
+          Repeat this session weekly for the rest of this phase ({repeatCandidateDates.length} more week
+          {repeatCandidateDates.length === 1 ? "" : "s"}, this group only)
+        </label>
+      )}
+
       {!showDistancePace ? (
         <button
           type="button"
@@ -332,7 +352,7 @@ export function WorkoutEntryForm({
         </div>
       )}
 
-      {!existing && otherGroups.length > 0 && (
+      {!existing && !repeatWeekly && otherGroups.length > 0 && (
         <div className="rounded-lg border border-black/10 p-3 dark:border-white/10">
           <p className={labelClass}>Also add to other groups</p>
           <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">

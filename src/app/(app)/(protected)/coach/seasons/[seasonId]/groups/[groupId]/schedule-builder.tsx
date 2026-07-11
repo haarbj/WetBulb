@@ -11,7 +11,7 @@ import {
   unpublishWeek,
 } from "@/app/(app)/(protected)/coach/group-plans-actions";
 import { workoutTypeLabel } from "@/app/(app)/(protected)/plan/format-workout";
-import type { WorkoutType } from "@/lib/coaching-engine";
+import { addDays, diffDays, type WorkoutType } from "@/lib/coaching-engine";
 import { formatDate } from "@/lib/format";
 import type { GroupDayEntries } from "./all-groups-day-view";
 import { WorkoutEntryForm } from "./workout-entry-form";
@@ -162,6 +162,7 @@ function WorkoutRow({
 
 function WeekSection({
   week,
+  weekRanges,
   workouts,
   groupPlanId,
   seasonId,
@@ -169,12 +170,17 @@ function WeekSection({
   otherGroupsData,
 }: {
   week: WeekRange;
+  weekRanges: WeekRange[];
   workouts: Workout[];
   groupPlanId: string;
   seasonId: string;
   otherGroups: { id: string; name: string }[];
   otherGroupsData: GroupDayEntries[];
 }) {
+  // Later weeks in this same phase -- the leverage for "repeat this
+  // session weekly," since a phase (not the whole season) is the coach's
+  // natural unit of "this pattern holds for now."
+  const laterWeeksSamePhase = weekRanges.filter((w) => w.phaseId === week.phaseId && w.weekIndex > week.weekIndex);
   const [addingDate, setAddingDate] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -369,6 +375,7 @@ function WeekSection({
                   scheduledDate={date}
                   seasonPhaseId={week.phaseId}
                   otherGroups={otherGroups}
+                  repeatCandidateDates={laterWeeksSamePhase.map((w) => addDays(w.startDate, diffDays(week.startDate, date)))}
                   onDone={refresh}
                   onCancel={() => setAddingDate(null)}
                 />
@@ -424,6 +431,7 @@ export function ScheduleBuilder({
         <WeekSection
           key={week.weekIndex}
           week={week}
+          weekRanges={weekRanges}
           workouts={workouts.filter((w) => w.scheduled_date >= week.startDate && w.scheduled_date <= week.endDate)}
           groupPlanId={groupPlanId}
           seasonId={seasonId}
