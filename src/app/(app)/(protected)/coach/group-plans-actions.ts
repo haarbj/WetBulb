@@ -105,6 +105,7 @@ export type WorkoutInput = {
   description: string;
   secondaryActivity: string | null;
   workoutType: WorkoutType | null;
+  durationMin: number | null;
   distanceM: number | null;
   paceFastSecPerMile: number | null;
   paceSlowSecPerMile: number | null;
@@ -129,6 +130,7 @@ export async function upsertGroupPlanWorkout(input: WorkoutInput): Promise<Actio
     description: input.description.trim(),
     secondary_activity: input.secondaryActivity,
     workout_type: input.workoutType,
+    duration_min: input.durationMin,
     distance_m: input.distanceM,
     pace_fast_sec_per_mile: input.paceFastSecPerMile,
     pace_slow_sec_per_mile: input.paceSlowSecPerMile,
@@ -211,6 +213,7 @@ export async function createWorkoutForGroups(
     description: input.description.trim(),
     secondary_activity: input.secondaryActivity,
     workout_type: input.workoutType,
+    duration_min: input.durationMin,
     distance_m: input.distanceM,
     pace_fast_sec_per_mile: input.paceFastSecPerMile,
     pace_slow_sec_per_mile: input.paceSlowSecPerMile,
@@ -283,6 +286,7 @@ export async function copyWorkoutToGroups(
       description: source.description,
       secondary_activity: source.secondary_activity,
       workout_type: source.workout_type,
+      duration_min: source.duration_min,
       distance_m: source.distance_m,
       pace_fast_sec_per_mile: source.pace_fast_sec_per_mile,
       pace_slow_sec_per_mile: source.pace_slow_sec_per_mile,
@@ -334,6 +338,7 @@ export async function duplicateWeekToGroup(
       description: source.description,
       secondary_activity: source.secondary_activity,
       workout_type: source.workout_type,
+      duration_min: source.duration_min,
       distance_m: source.distance_m,
       pace_fast_sec_per_mile: source.pace_fast_sec_per_mile,
       pace_slow_sec_per_mile: source.pace_slow_sec_per_mile,

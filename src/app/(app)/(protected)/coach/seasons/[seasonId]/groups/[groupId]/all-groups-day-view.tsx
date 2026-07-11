@@ -39,6 +39,7 @@ export function AllGroupsDayView({ dates, groups }: { dates: string[]; groups: G
                         <p className="text-xs text-zinc-500 dark:text-zinc-400">
                           {[w.time_of_day, w.location].filter(Boolean).join(" · ") || "—"}
                           {w.workout_type && ` · ${workoutTypeLabel(w.workout_type)}`}
+                          {w.duration_min && ` · ${w.duration_min} min`}
                           {w.is_race && " · Race"}
                         </p>
                         <p className="text-sm text-zinc-900 dark:text-white">{w.description}</p>

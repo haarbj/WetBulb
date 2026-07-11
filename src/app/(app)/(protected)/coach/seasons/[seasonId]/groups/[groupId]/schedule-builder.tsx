@@ -34,6 +34,7 @@ export type Workout = {
   description: string;
   secondary_activity: string | null;
   workout_type: WorkoutType | null;
+  duration_min: number | null;
   distance_m: number | null;
   pace_fast_sec_per_mile: number | null;
   pace_slow_sec_per_mile: number | null;
@@ -87,8 +88,10 @@ function WorkoutRow({
           {workout.secondary_activity && (
             <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{workout.secondary_activity}</p>
           )}
-          {(workout.distance_m || workout.pace_fast_sec_per_mile) && (
+          {(workout.duration_min || workout.distance_m || workout.pace_fast_sec_per_mile) && (
             <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+              {workout.duration_min && `${workout.duration_min} min`}
+              {workout.duration_min && (workout.distance_m || workout.pace_fast_sec_per_mile) && " · "}
               {workout.distance_m && `${(workout.distance_m / 1609.34).toFixed(1)} mi`}
               {workout.distance_m && workout.pace_fast_sec_per_mile && " · "}
               {workout.pace_fast_sec_per_mile && workout.pace_slow_sec_per_mile &&

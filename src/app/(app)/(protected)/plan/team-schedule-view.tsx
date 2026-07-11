@@ -15,6 +15,7 @@ type GroupPlanWorkout = {
   description: string;
   secondary_activity: string | null;
   workout_type: WorkoutType | null;
+  duration_min: number | null;
   distance_m: number | null;
   pace_fast_sec_per_mile: number | null;
   pace_slow_sec_per_mile: number | null;
@@ -56,8 +57,10 @@ function GroupWorkoutRow({
           {workout.secondary_activity && (
             <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{workout.secondary_activity}</p>
           )}
-          {(workout.distance_m || workout.pace_fast_sec_per_mile) && (
+          {(workout.duration_min || workout.distance_m || workout.pace_fast_sec_per_mile) && (
             <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+              {workout.duration_min && `${workout.duration_min} min`}
+              {workout.duration_min && (workout.distance_m || workout.pace_fast_sec_per_mile) && " · "}
               {workout.distance_m && `${(workout.distance_m / 1609.34).toFixed(1)} mi`}
               {workout.distance_m && workout.pace_fast_sec_per_mile && " · "}
               {workout.pace_fast_sec_per_mile &&
@@ -165,7 +168,7 @@ export async function TeamScheduleView({ userId, coachView = false }: { userId: 
 
   let workoutsQuery = supabase
     .from("group_plan_workouts")
-    .select("id, scheduled_date, time_of_day, location, description, secondary_activity, workout_type, distance_m, pace_fast_sec_per_mile, pace_slow_sec_per_mile, is_race, notes, published_at, explanation")
+    .select("id, scheduled_date, time_of_day, location, description, secondary_activity, workout_type, duration_min, distance_m, pace_fast_sec_per_mile, pace_slow_sec_per_mile, is_race, notes, published_at, explanation")
     .eq("group_plan_id", groupPlan.id)
     .gte("scheduled_date", windowStart.toISOString().slice(0, 10))
     .lte("scheduled_date", windowEnd.toISOString().slice(0, 10));

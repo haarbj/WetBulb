@@ -58,6 +58,7 @@ export function WorkoutEntryForm({
   const baseId = useId();
   const [timeOfDay, setTimeOfDay] = useState(existing?.time_of_day ?? "");
   const [location, setLocation] = useState(existing?.location ?? "");
+  const [durationMin, setDurationMin] = useState(existing?.duration_min ? String(existing.duration_min) : "");
   const [description, setDescription] = useState(existing?.description ?? "");
   const [secondaryActivity, setSecondaryActivity] = useState(existing?.secondary_activity ?? "");
   const [workoutType, setWorkoutType] = useState<WorkoutType | "">(existing?.workout_type ?? "");
@@ -116,6 +117,7 @@ export function WorkoutEntryForm({
       description,
       secondaryActivity: secondaryActivity.trim() || null,
       workoutType: workoutType || null,
+      durationMin: durationMin.trim() ? Math.round(Number(durationMin)) : null,
       distanceM: showDistancePace && distanceM ? Math.round(Number(distanceM) * 1609.34) : null,
       paceFastSecPerMile: showDistancePace ? minSecPerMileToSecPerMile(paceFast) : null,
       paceSlowSecPerMile: showDistancePace ? minSecPerMileToSecPerMile(paceSlow) : null,
@@ -139,14 +141,27 @@ export function WorkoutEntryForm({
       <div className="flex flex-wrap gap-3">
         <div>
           <label htmlFor={`${baseId}-time`} className={labelClass}>
-            Time
+            Time of practice
           </label>
           <input
             id={`${baseId}-time`}
             value={timeOfDay}
             onChange={(e) => setTimeOfDay(e.target.value)}
-            placeholder="e.g. 6:00am"
-            className={`${fieldClass} w-32`}
+            placeholder="e.g. 6:00am (blank if OYO)"
+            className={`${fieldClass} w-40`}
+          />
+        </div>
+        <div>
+          <label htmlFor={`${baseId}-duration`} className={labelClass}>
+            Duration (min)
+          </label>
+          <input
+            id={`${baseId}-duration`}
+            value={durationMin}
+            onChange={(e) => setDurationMin(e.target.value)}
+            inputMode="numeric"
+            placeholder="e.g. 45"
+            className={`${fieldClass} w-24`}
           />
         </div>
         <div>
