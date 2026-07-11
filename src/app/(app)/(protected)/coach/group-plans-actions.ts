@@ -36,18 +36,31 @@ export async function ensureGroupPlan(seasonId: string, groupId: string): Promis
   return { groupPlanId: created.id };
 }
 
+// Every group's plans for a season, so publish actions can cascade across
+// all of them -- a coach who builds JV/Frosh and Varsity together
+// shouldn't have to click publish twice for the same week.
+async function allGroupPlanIdsForSeason(supabase: Awaited<ReturnType<typeof createClient>>, seasonId: string): Promise<string[]> {
+  const { data } = await supabase.from("group_plans").select("id").eq("season_plan_id", seasonId);
+  return (data ?? []).map((p) => p.id);
+}
+
 // Reveals one specific week to its athletes -- publishing is per-entry, not
 // per-plan, so a coach can finalize and reveal this week without being
 // forced to also publish months of not-yet-settled weeks ahead of it.
-export async function publishWeek(groupPlanId: string, weekStartDate: string, weekEndDate: string): Promise<ActionState> {
+// Season-wide (not per-group): groups in the same season are usually built
+// and finalized together, so publishing one group's week publishes every
+// other group's entries for that same date range too.
+export async function publishWeek(seasonId: string, weekStartDate: string, weekEndDate: string): Promise<ActionState> {
   const session = await getAppSession();
   if (session?.role !== "coach") return { error: "Not authorized." };
 
   const supabase = await createClient();
+  const groupPlanIds = await allGroupPlanIdsForSeason(supabase, seasonId);
+  if (groupPlanIds.length === 0) return {};
   const { error } = await supabase
     .from("group_plan_workouts")
     .update({ published_at: new Date().toISOString() })
-    .eq("group_plan_id", groupPlanId)
+    .in("group_plan_id", groupPlanIds)
     .gte("scheduled_date", weekStartDate)
     .lte("scheduled_date", weekEndDate);
   if (error) return { error: error.message };
@@ -57,15 +70,17 @@ export async function publishWeek(groupPlanId: string, weekStartDate: string, we
   return {};
 }
 
-export async function unpublishWeek(groupPlanId: string, weekStartDate: string, weekEndDate: string): Promise<ActionState> {
+export async function unpublishWeek(seasonId: string, weekStartDate: string, weekEndDate: string): Promise<ActionState> {
   const session = await getAppSession();
   if (session?.role !== "coach") return { error: "Not authorized." };
 
   const supabase = await createClient();
+  const groupPlanIds = await allGroupPlanIdsForSeason(supabase, seasonId);
+  if (groupPlanIds.length === 0) return {};
   const { error } = await supabase
     .from("group_plan_workouts")
     .update({ published_at: null })
-    .eq("group_plan_id", groupPlanId)
+    .in("group_plan_id", groupPlanIds)
     .gte("scheduled_date", weekStartDate)
     .lte("scheduled_date", weekEndDate);
   if (error) return { error: error.message };
@@ -76,17 +91,19 @@ export async function unpublishWeek(groupPlanId: string, weekStartDate: string, 
 }
 
 // Convenience for "just publish everything so far" -- publishes every
-// entry in this group's plan that isn't already published, regardless of
-// week.
-export async function publishAllWeeks(groupPlanId: string): Promise<ActionState> {
+// not-yet-published entry across every group in the season, regardless of
+// week, matching publishWeek/unpublishWeek's season-wide scope.
+export async function publishAllWeeks(seasonId: string): Promise<ActionState> {
   const session = await getAppSession();
   if (session?.role !== "coach") return { error: "Not authorized." };
 
   const supabase = await createClient();
+  const groupPlanIds = await allGroupPlanIdsForSeason(supabase, seasonId);
+  if (groupPlanIds.length === 0) return {};
   const { error } = await supabase
     .from("group_plan_workouts")
     .update({ published_at: new Date().toISOString() })
-    .eq("group_plan_id", groupPlanId)
+    .in("group_plan_id", groupPlanIds)
     .is("published_at", null);
   if (error) return { error: error.message };
 

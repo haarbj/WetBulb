@@ -13,6 +13,7 @@ import {
 import { workoutTypeLabel } from "@/app/(app)/(protected)/plan/format-workout";
 import type { WorkoutType } from "@/lib/coaching-engine";
 import { formatDate } from "@/lib/format";
+import type { GroupDayEntries } from "./all-groups-day-view";
 import { WorkoutEntryForm } from "./workout-entry-form";
 
 export type WeekRange = {
@@ -165,19 +166,36 @@ function WeekSection({
   groupPlanId,
   seasonId,
   otherGroups,
+  otherGroupsData,
 }: {
   week: WeekRange;
   workouts: Workout[];
   groupPlanId: string;
   seasonId: string;
   otherGroups: { id: string; name: string }[];
+  otherGroupsData: GroupDayEntries[];
 }) {
   const [addingDate, setAddingDate] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [duplicateTarget, setDuplicateTarget] = useState("");
   const [duplicateOpen, setDuplicateOpen] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
   const router = useRouter();
+
+  // Other groups' entries for this same date range -- what a coach
+  // building JV/Frosh after Varsity would otherwise have to go check
+  // manually ("add a certain amount of minutes" to what the other group's
+  // week already has).
+  const otherGroupsThisWeek = otherGroupsData
+    .map((g) => ({
+      groupName: g.groupName,
+      entries: Object.entries(g.workoutsByDate)
+        .filter(([date]) => date >= week.startDate && date <= week.endDate)
+        .flatMap(([, entries]) => entries)
+        .sort((a, b) => a.scheduled_date.localeCompare(b.scheduled_date)),
+    }))
+    .filter((g) => g.entries.length > 0);
 
   const workoutsByDate = new Map<string, Workout[]>();
   for (const w of workouts) {
@@ -233,14 +251,18 @@ function WeekSection({
                 disabled={isPending}
                 onClick={() =>
                   startTransition(async () => {
-                    if (publishState === "all") await unpublishWeek(groupPlanId, week.startDate, week.endDate);
-                    else await publishWeek(groupPlanId, week.startDate, week.endDate);
+                    if (publishState === "all") await unpublishWeek(seasonId, week.startDate, week.endDate);
+                    else await publishWeek(seasonId, week.startDate, week.endDate);
                     refresh();
                   })
                 }
                 className="text-xs font-semibold text-zinc-700 underline decoration-black/20 underline-offset-2 hover:decoration-black disabled:opacity-60 dark:text-zinc-200 dark:decoration-white/20 dark:hover:decoration-white"
               >
-                {publishState === "all" ? "Unpublish this week" : "Publish this week"}
+                {publishState === "all"
+                  ? "Unpublish this week"
+                  : otherGroups.length > 0
+                    ? "Publish this week for all groups"
+                    : "Publish this week"}
               </button>
             </>
           )}
@@ -249,8 +271,37 @@ function WeekSection({
               Duplicate week to another group
             </button>
           )}
+          {otherGroupsThisWeek.length > 0 && (
+            <button type="button" onClick={() => setCompareOpen((v) => !v)} className="text-xs font-semibold text-zinc-700 dark:text-zinc-200">
+              {compareOpen ? "Hide" : "Compare"} other groups this week
+            </button>
+          )}
         </div>
       </div>
+
+      {compareOpen && otherGroupsThisWeek.length > 0 && (
+        <div className="mt-3 grid gap-3 rounded-lg border border-black/10 p-3 sm:grid-cols-2 dark:border-white/10">
+          {otherGroupsThisWeek.map((g) => (
+            <div key={g.groupName}>
+              <p className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+                {g.groupName}
+              </p>
+              <div className="mt-1.5 space-y-1.5">
+                {g.entries.map((w) => (
+                  <div key={w.id}>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      {formatDate(w.scheduled_date)}
+                      {(w.time_of_day || w.location) && ` · ${[w.time_of_day, w.location].filter(Boolean).join(" · ")}`}
+                      {w.duration_min && ` · ${w.duration_min} min`}
+                    </p>
+                    <p className="text-sm text-zinc-900 dark:text-white">{w.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {duplicateOpen && (
         <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-black/10 p-2 dark:border-white/10">
@@ -341,12 +392,14 @@ export function ScheduleBuilder({
   weekRanges,
   workouts,
   otherGroups,
+  otherGroupsData,
 }: {
   seasonId: string;
   groupPlanId: string;
   weekRanges: WeekRange[];
   workouts: Workout[];
   otherGroups: { id: string; name: string }[];
+  otherGroupsData: GroupDayEntries[];
 }) {
   return (
     <div className="space-y-6">
@@ -358,6 +411,7 @@ export function ScheduleBuilder({
           groupPlanId={groupPlanId}
           seasonId={seasonId}
           otherGroups={otherGroups}
+          otherGroupsData={otherGroupsData}
         />
       ))}
     </div>

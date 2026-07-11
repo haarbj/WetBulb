@@ -148,6 +148,7 @@ export default async function GroupSchedulePage({ params }: PageProps) {
         <ViewToggle
           seasonId={seasonId}
           groupPlanId={groupPlanId}
+          currentGroupId={groupId}
           weekRanges={weekRanges}
           workouts={workouts ?? []}
           otherGroups={otherGroups}
