@@ -158,7 +158,17 @@ export const glossaryTerms: GlossaryTerm[] = [
   {
     id: "flow-state",
     aliases: ["flow state"],
-    href: "/sports-psychology#letting-go-of-the-outcome",
+    href: "/performing-under-pressure#the-chemistry-of-flow",
+  },
+  {
+    id: "curse-of-talent",
+    aliases: ["curse of talent"],
+    href: "/goal-setting#where-your-beliefs-actually-came-from",
+  },
+  {
+    id: "curse-of-perfection",
+    aliases: ["curse of perfection"],
+    href: "/performing-under-pressure#a-bad-day-is-only-a-day",
   },
   {
     id: "hyponatremia",
@@ -192,7 +202,7 @@ export const glossaryTerms: GlossaryTerm[] = [
   },
   {
     id: "pain-tolerance",
-    aliases: ["pain tolerance"],
+    aliases: ["pain tolerance", "Tolerance for Suffering Is a Trainable Skill"],
     href: "/sports-psychology#tolerance-for-suffering-is-a-trainable-skill",
   },
   {
@@ -204,5 +214,54 @@ export const glossaryTerms: GlossaryTerm[] = [
     id: "plasma-osmolality",
     aliases: ["plasma osmolality"],
     href: "/nutrition-and-fueling#what-the-body-actually-monitors-isn-t-water-volume",
+  },
+  // Whole-page references -- lets a bare mention of a page's title anywhere
+  // in prose (as opposed to a specific heading on it) still link somewhere,
+  // without needing a dedicated entry for every passing "see Sports
+  // Psychology" or "see Training Philosophy" style reference.
+  {
+    id: "sports-psychology-page",
+    aliases: ["Sports Psychology"],
+    href: "/sports-psychology",
+  },
+  {
+    id: "training-philosophy-page",
+    aliases: ["Training Philosophy"],
+    href: "/training-philosophy",
+  },
+  {
+    id: "consistency-and-daily-practice-page",
+    aliases: ["Consistency & Daily Practice"],
+    href: "/daily-practice",
+  },
+  {
+    id: "for-coaches-page",
+    aliases: ["For Coaches"],
+    href: "/for-coaches",
+  },
+  {
+    id: "mental-attitude-during-the-race",
+    aliases: ["Mental Attitude During the Race"],
+    href: "/sports-psychology#mental-attitude-during-the-race",
+  },
+  {
+    id: "racing-the-last-25",
+    aliases: ["Racing the Last 25%"],
+    href: "/marathon-training#racing-the-last-25",
+  },
+  {
+    id: "the-adaptation-curve",
+    aliases: ["The Adaptation Curve"],
+    href: "/the-aerobic-base#the-adaptation-curve",
+  },
+  {
+    id: "letting-go-of-the-outcome",
+    aliases: ["Letting Go of the Outcome"],
+    href: "/sports-psychology#letting-go-of-the-outcome",
+  },
+  {
+    id: "norwegian-threshold-training",
+    aliases: ["Norwegian Threshold Training"],
+    href: "/coaching-library#norwegian-threshold-training-living-at-the-edge-of-the-threshold",
   },
 ];
