@@ -44,7 +44,7 @@ export default async function AdminPage() {
               Triage reader questions and topic suggestions into the content pipeline.
             </p>
           </div>
-          <span className="text-sm font-semibold text-zinc-700 transition group-hover:text-zinc-950 dark:text-white">
+          <span className="text-sm font-semibold text-zinc-700 transition group-hover:text-zinc-950 dark:text-white dark:group-hover:text-white">
             Open →
           </span>
         </CardLink>

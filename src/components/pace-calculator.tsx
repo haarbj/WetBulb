@@ -1333,24 +1333,30 @@ export function PaceCalculator() {
           Want a training plan built around your goals, mileage, schedule,
           and training history?
         </p>
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-          Personalized plans are coming soon.
-        </p>
-        <Link
-          href="/training-plans"
-          className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+        <button
+          type="button"
+          disabled
+          title="Personalized training plans are coming soon"
+          className="mt-4 inline-flex cursor-not-allowed items-center gap-1.5 rounded-full bg-black/5 px-5 py-2.5 text-sm font-semibold text-zinc-400 dark:bg-white/5 dark:text-zinc-500"
         >
-          Explore Training Plans →
-        </Link>
+          Coming Soon
+        </button>
         <p className="mt-4 border-t border-black/10 pt-4 text-xs text-zinc-600 dark:border-white/10 dark:text-zinc-300">
           Or browse the{" "}
+          <Link
+            href="/training-plans"
+            className="underline decoration-black/30 underline-offset-2 hover:decoration-black dark:decoration-white/30 dark:hover:decoration-white"
+          >
+            Training Plans
+          </Link>
+          ,{" "}
           <Link
             href="/workout-library"
             className="underline decoration-black/30 underline-offset-2 hover:decoration-black dark:decoration-white/30 dark:hover:decoration-white"
           >
             Workout Library
-          </Link>{" "}
-          or the{" "}
+          </Link>
+          , or{" "}
           <Link
             href="/coaching-library"
             className="underline decoration-black/30 underline-offset-2 hover:decoration-black dark:decoration-white/30 dark:hover:decoration-white"

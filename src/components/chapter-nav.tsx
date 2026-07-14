@@ -19,7 +19,7 @@ export function ChapterNav({ prev, next }: ChapterNavProps) {
           <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-zinc-500 dark:text-zinc-400">
             <span aria-hidden="true">←</span> Previous
           </span>
-          <span className="mt-1 text-lg font-semibold tracking-tight text-zinc-900 transition group-hover:text-zinc-950 dark:text-white">
+          <span className="mt-1 text-lg font-semibold tracking-tight text-zinc-900 transition group-hover:text-zinc-950 dark:text-white dark:group-hover:text-white">
             {prev.title}
           </span>
         </CardLink>
@@ -31,7 +31,7 @@ export function ChapterNav({ prev, next }: ChapterNavProps) {
           <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-zinc-500 dark:text-zinc-400">
             Next <span aria-hidden="true">→</span>
           </span>
-          <span className="mt-1 text-lg font-semibold tracking-tight text-zinc-900 transition group-hover:text-zinc-950 dark:text-white">
+          <span className="mt-1 text-lg font-semibold tracking-tight text-zinc-900 transition group-hover:text-zinc-950 dark:text-white dark:group-hover:text-white">
             {next.title}
           </span>
         </CardLink>
