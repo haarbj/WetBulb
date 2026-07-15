@@ -1094,10 +1094,28 @@ export const sections: Section[] = [
     category: "recovery-and-fueling",
     lastUpdated: "2026-07-13",
     content: [
-      { type: "heading", text: "Eat Without a Label" },
+      { type: "heading", text: "Whole Food Most of the Time, Fast Fuel When It Matters" },
       {
         type: "paragraph",
-        text: "If it's man-made, it's probably not good for you — the simplest nutrition rule that actually holds up. Eat whatever you want, as much as you want, as long as it doesn't have a label on it: fruits, vegetables, and meat, not processed food. Carbohydrates digest faster than protein or fat, which is why they belong before training or racing, not after. Complex carbs — rice, potatoes, pasta — provide longer-lasting energy than simple sugars. Unsaturated fats, liquid at room temperature, are the better everyday choice over saturated fats, solid at room temperature, though the body needs some of both, along with sugar and red meat in moderation. Papaya and pineapple are worth having on hand for sore muscles.",
+        text: "Most meals, most days, should be built around minimally processed food — fruit, vegetables, meat, dairy, intact grains — because it's the most nutrient-dense way to meet everyday needs without overthinking every plate. But \"processed\" isn't a synonym for \"bad\" once training enters the picture: the food that's wrong for an ordinary Tuesday dinner is often exactly right an hour before a workout. Carbohydrate digests faster than protein or fat, which is exactly why it belongs both right before a session and right after one — the same speed that makes a banana useful pre-run is what makes chocolate milk or a recovery drink work in the 30–60 minutes after a hard effort, when glycogen resynthesis is fastest and a big plate of chicken and vegetables would just sit there instead of getting absorbed. Complex carbs — rice, potatoes, pasta — release more slowly, which is why they belong in an ordinary meal or the dinner before a long race, not in a gel during one. A marathoner peaking at 80–90 miles a week burns through several thousand more calories than a high schooler running 25–35, and on the heaviest weeks, hitting that calorie target from whole food alone is genuinely hard — fiber and fat fill you up long before the number does, which is one of the clearest cases where a bagel, white rice, or a sports drink outperforms the option that looks \"healthier\" on a label.",
+      },
+      {
+        type: "paragraph",
+        text: "Unsaturated fats, liquid at room temperature, are the better everyday choice over saturated fats, solid at room temperature, though the body needs some of both, along with sugar and red meat in moderation. Papaya and pineapple are worth having on hand for sore muscles.",
+      },
+      {
+        type: "callout",
+        variant: "tip",
+        title: "🍬 When \"Processed\" Is the Right Choice",
+        text: "A few concrete cases where refined, fast-digesting food is the correct call, not a compromise:",
+        items: [
+          "Before a workout — a banana or a slice of white bread digests fast enough to be gone before you start; oatmeal loaded with nuts and fruit needs hours you may not have.",
+          "During a long run or race — gels, chews, and sports drinks exist to do one job: get carbohydrate into the bloodstream as fast and as gut-friendly as possible. Whole food can't compete with that mid-run.",
+          "Right after a hard session — chocolate milk or a recovery drink delivers fast carbohydrate and protein in a form you can stomach immediately, when a big plate of \"real\" food might just sit there until your appetite catches up.",
+          "On a marathon build peaking at 80–90 miles a week — hitting the calorie target from whole food alone often means eating past the point of comfort; white rice, bagels, and sports drinks add calories without adding bulk.",
+          "On a week with no time to cook — a frozen meal or a granola bar eaten on schedule beats a \"better\" meal that gets skipped because there wasn't time to make it.",
+          "When appetite quietly lags behind training load — this is often where energy availability falls short before anyone notices (see Relative Energy Deficiency in Sport (RED-S) in Recovery) — easily digested, energy-dense food closes that gap faster than forcing down more vegetables.",
+        ],
       },
       { type: "heading", text: "Carbohydrate Strategy" },
       { type: "heading", text: "How Much Carbohydrate a Session Actually Needs", level: 3 },
@@ -1144,7 +1162,7 @@ export const sections: Section[] = [
       { type: "heading", text: "Is All That Sugar During Exercise Actually Healthy?", level: 3 },
       {
         type: "paragraph",
-        text: "It's a reasonable question. The key context is that sugar during hard or long exercise isn't the same as sugar consumed at rest. Contracting muscle rapidly increases glucose uptake during exercise, partly through insulin-independent GLUT4 transporter activity — in plain terms, working muscle actively pulls carbohydrate out of the blood and burns it, rather than that carbohydrate sitting around raising blood sugar the way it would sitting still. Skeletal muscle is responsible for most whole-body glucose disposal, and exercise increases that uptake dramatically compared with rest (Evans et al., 2019) — one reason regular endurance training is associated with better insulin sensitivity and lower metabolic disease risk, not worse. For a healthy endurance athlete, carbohydrate taken during long or hard exercise is generally supporting performance, maintaining blood glucose, and limiting excessive glycogen depletion, not adding empty calories to the diet (Jeukendrup, 2014). That doesn't mean sugar belongs in the diet all day — it means it belongs during the work: long runs, races, hard workouts, and big training days. For a short easy run, most athletes still need little or nothing during the session (see Eat Without a Label above for the everyday version of this same idea).",
+        text: "It's a reasonable question. The key context is that sugar during hard or long exercise isn't the same as sugar consumed at rest. Contracting muscle rapidly increases glucose uptake during exercise, partly through insulin-independent GLUT4 transporter activity — in plain terms, working muscle actively pulls carbohydrate out of the blood and burns it, rather than that carbohydrate sitting around raising blood sugar the way it would sitting still. Skeletal muscle is responsible for most whole-body glucose disposal, and exercise increases that uptake dramatically compared with rest (Evans et al., 2019) — one reason regular endurance training is associated with better insulin sensitivity and lower metabolic disease risk, not worse. For a healthy endurance athlete, carbohydrate taken during long or hard exercise is generally supporting performance, maintaining blood glucose, and limiting excessive glycogen depletion, not adding empty calories to the diet (Jeukendrup, 2014). That doesn't mean sugar belongs in the diet all day — it means it belongs during the work: long runs, races, hard workouts, and big training days. For a short easy run, most athletes still need little or nothing during the session (see Whole Food Most of the Time, Fast Fuel When It Matters above for the everyday version of this same idea).",
       },
       { type: "heading", text: "Why Fueling Mixes Glucose and Fructose", level: 3 },
       {
@@ -1183,7 +1201,7 @@ export const sections: Section[] = [
       { type: "heading", text: "Hydration", level: 3 },
       {
         type: "paragraph",
-        text: "A simple daily baseline: water need in ounces equals body weight in pounds divided by two. Sip through the day — aim for at least one sip every 20 minutes — rather than trying to catch up all at once. Treat that number as an everyday starting point, not a target to hit exactly during a long run or race: sweat rate varies enormously by athlete, heat, and effort, so training and race hydration deserves real individual adjustment rather than a fixed formula (see Hydration Is Individual, Not a Fixed Formula below).",
+        text: "A simple daily baseline: water need in ounces equals body weight in pounds divided by two — a rough proxy for resting fluid turnover, not a measurement of what any specific day's training will cost you. Sip through the day — aim for at least one sip every 20 minutes — rather than trying to catch up all at once. Treat that number as an everyday starting point, not a target to hit exactly during a long run or race: sweat rate varies enormously by athlete, heat, and effort, so training and race hydration deserves real individual adjustment rather than a fixed formula (see Hydration Is Individual, Not a Fixed Formula below).",
       },
       { type: "heading", text: "Thirst Slows You Down Before Dehydration Does", level: 3 },
       {
@@ -1282,7 +1300,7 @@ export const sections: Section[] = [
       { type: "heading", text: "Micronutrients Worth Knowing About" },
       {
         type: "paragraph",
-        text: "A varied, whole-food diet covers most of what an athlete needs, but a handful of micronutrients are worth understanding specifically because training load raises the demand for them. The B-vitamins do a lot of the metabolic heavy lifting: B1 (thiamine) helps convert carbohydrate into usable glucose, B2 (riboflavin) supports fat digestion, B3 (niacin) is central to red blood cell function, and B12 supports the nervous system's signaling between brain and body — found richly in animal products, which is one reason B12 deficiency is a real, checkable concern for athletes eating a fully plant-based diet. Folate, found in leafy greens and legumes, works alongside B12 in forming new red blood cells; a deficiency in either shows up as anemia, which is worth ruling out directly with bloodwork in any endurance athlete who's unexplainably fatigued rather than guessed at. Vitamin C supports iron absorption from plant sources specifically — pairing a vitamin-C-rich food with a plant iron source in the same meal measurably improves how much of that iron the body actually absorbs. Calcium and vitamin D matter for bone density in particular — see Relative Energy Deficiency in Sport (RED-S) in Recovery for why that matters more for a training athlete than it might seem.",
+        text: "A varied, whole-food diet covers most of what an athlete needs, but a handful of micronutrients are worth understanding specifically because training load raises the demand for them. The B-vitamins do a lot of the metabolic heavy lifting: B1 (thiamine) helps convert carbohydrate into usable glucose, B2 (riboflavin) supports fat digestion, B3 (niacin) is central to red blood cell function, and B12 supports the nervous system's signaling between brain and body — found richly in animal products, which is one reason B12 deficiency is a real, checkable concern for athletes eating a fully plant-based diet. Folate, found in leafy greens and legumes, works alongside B12 in forming new red blood cells; a deficiency in either shows up as anemia, which is worth ruling out directly with bloodwork in any endurance athlete who's unexplainably fatigued rather than guessed at. Vitamin C supports iron absorption from plant sources specifically — pairing a vitamin-C-rich food with a plant iron source in the same meal measurably improves how much of that iron the body actually absorbs. Calcium and vitamin D matter for bone density in particular — see Relative Energy Deficiency in Sport (RED-S) in Recovery for why that matters more for a training athlete than it might seem: bone density is exactly the kind of system the body quietly deprioritizes when energy intake doesn't keep pace with training load.",
       },
       {
         type: "paragraph",
@@ -1331,13 +1349,14 @@ export const sections: Section[] = [
       },
       { type: "heading", text: "Common Fueling Mistakes" },
       {
-        type: "list",
+        type: "callout",
+        variant: "mistake",
         items: [
           "Underfueling long races — many runners take far less carbohydrate than the current evidence supports, and pay for it with late-race fading.",
           "Debuting new fueling on race day — the gut needs practice beforehand; race day should be execution, not experimentation.",
           "Overdrinking — 'more hydration is always better' isn't true, and taken far enough, it's dangerous (Hew-Butler et al., 2015).",
           "Assuming good fueling has to be expensive — a properly calculated DIY mix works as well as anything off a shelf; commercial products buy convenience, not a different result.",
-          "Ignoring everyday nutrition — no amount of in-race fueling compensates for chronic under-eating, poor sleep, or bad training.",
+          "Ignoring everyday energy needs — no amount of in-race fueling makes up for chronic under-eating relative to training load. That's the same energy-availability shortfall behind Relative Energy Deficiency in Sport (RED-S) in Recovery, not a separate problem.",
         ],
       },
       { type: "heading", text: "The Strategy, Simplified" },
@@ -2699,7 +2718,22 @@ export const sections: Section[] = [
       { type: "heading", text: "Jog Through Soreness, Don't Wait It Out" },
       {
         type: "paragraph",
-        text: "The instinct to rest completely until sore muscles feel normal again is usually the wrong call. A slow, easy jog the day after a hard effort pushes blood through the muscle and helps clear the waste products causing the soreness — the heart doing, in effect, a gentle massage a resting runner can't get any other way. Stopping until the soreness fully resolves just means starting from scratch and working through the same soreness again once training resumes (Lydiard, Running to the Top).",
+        text: "The instinct to rest completely until sore muscles feel normal again is usually the wrong call. A slow, easy jog the day after a hard effort pushes blood through the muscle and helps clear the waste products causing the soreness — the heart doing, in effect, a gentle massage a resting runner can't get any other way. Stopping until the soreness fully resolves just means starting from scratch and working through the same soreness again once training resumes (Lydiard, Running to the Top). That advice assumes ordinary soreness, though — not every ache the day after a hard effort is safe to run through.",
+      },
+      {
+        type: "callout",
+        variant: "tip",
+        title: "🔍 Telling Soreness From Something Worse",
+        text: "Three quick checks usually separate the two (a different distinction than tone vs. soreness below — this one is about soreness vs. injury):",
+        items: [
+          "Location — soreness is broad and muscle-wide, the whole quad or both calves evenly; an injury is usually a single spot you can press on and say \"right there.\"",
+          "Behavior during the warm-up mile — soreness eases or stays flat as the muscle warms up; an injury in progress typically gets sharper the longer you run on it, or changes your stride to compensate.",
+          "Timeline — soreness peaks at 24–48 hours and fades on its own within a few days no matter what you do; pain that persists, plateaus, or comes back worse after an easy jog isn't soreness anymore, whatever it started as.",
+        ],
+      },
+      {
+        type: "paragraph",
+        text: "If a pain is sharp rather than dull, sits at a single point rather than across a muscle, or changes how you run, treat it as an injury lead-up and back off. Jogging through it stops being the right call the moment it stops being ordinary soreness.",
       },
       { type: "heading", text: "Muscle Tone vs. Muscle Soreness" },
       {
@@ -2749,7 +2783,14 @@ export const sections: Section[] = [
       { type: "heading", text: "Relative Energy Deficiency in Sport (RED-S)" },
       {
         type: "paragraph",
-        text: "The old \"Female Athlete Triad\" framework — amenorrhea, disordered eating, osteoporosis — has been superseded by the broader RED-S model, which applies to male and female athletes alike. The cornerstone concept is energy availability: energy intake minus exercise energy expenditure, relative to lean body mass. Drop consistently below roughly 30 kcal per kilogram of lean mass per day, and the body starts down-regulating systems that aren't immediately essential to survival — menstrual function, bone formation, metabolic rate, immune function, and in some cases mood and cognition — regardless of whether the low availability comes from intentional restriction or simply under-eating relative to training load (Mountjoy et al., British Journal of Sports Medicine, 2014).",
+        text: "The old \"Female Athlete Triad\" framework — amenorrhea, disordered eating, osteoporosis — has been superseded by the broader RED-S model, which applies to male and female athletes alike. The cornerstone concept is energy availability: energy intake minus exercise energy expenditure, relative to lean body mass. Drop consistently below roughly 30 kcal per kilogram of lean mass per day, and the body starts down-regulating systems that aren't immediately essential to survival — menstrual function, bone formation, metabolic rate, immune function, and in some cases mood and cognition — regardless of whether the low availability comes from intentional restriction or simply under-eating relative to training load (Mountjoy et al., British Journal of Sports Medicine, 2014). That last point matters more than the stereotype suggests: a high schooler running 25–35 miles a week around a full class schedule, or a marathoner who ramped from 50 to 85 miles a week without eating any more to cover it, can land in the same energy deficit as an athlete deliberately restricting — RED-S is a math problem before it's anything else.",
+      },
+      {
+        type: "callout",
+        variant: "advanced",
+        collapsed: true,
+        title: "Who's actually at risk, and the tradeoff coaches really face",
+        text: "RED-S doesn't only show up in visibly lean athletes or classic disordered eating — it shows up in anyone whose eating hasn't kept pace with a jump in training, which makes distance runners at every level a genuine risk group, not just the sports historically flagged for it. It's also worth being honest about the tension coaches actually navigate: a lighter runner is sometimes a faster one in the short term, and that's not a myth — power-to-weight matters. The problem is that the same energy deficit producing that short-term leanness is what erodes the systems performance depends on over a full season, not a single race. An athlete who looks fitter in June and is sidelined with a stress fracture in September didn't get faster; they borrowed against a training block they hadn't actually earned. The practical guideline that follows: pursue performance and body-composition goals through training and food that supports the work, not by eating less than the training demands — see Whole Food Most of the Time, Fast Fuel When It Matters in Nutrition & Fueling for what adequate fueling actually looks like at high training volumes.",
       },
       { type: "heading", text: "The Recovery Timeline Doesn't Move at One Speed" },
       {
@@ -3004,6 +3045,33 @@ export const sectionMap = new Map(
 export const categoryMap = new Map(
   categories.map((category) => [category.slug, category]),
 );
+
+/**
+ * Resolves a linked-section reference that may carry a heading anchor
+ * (e.g. "recovery#jog-through-soreness-don-t-wait-it-out", the format
+ * the admin questions dashboard's "linked article slug" field stores)
+ * into the real section it points at, plus the href to link to.
+ *
+ * sectionMap itself is keyed by bare section slugs only ("recovery"), so
+ * looking an anchored value up there directly always misses -- this
+ * strips the fragment off before the lookup, then reattaches it to the
+ * href once the base slug is confirmed real. Returns null (rather than a
+ * best-effort guess) when the base slug doesn't match any section, so
+ * callers can fall back to plain text instead of linking to a 404.
+ */
+export function resolveLinkedSection(
+  linkedSectionSlug: string | null | undefined,
+): { section: Section; href: string } | null {
+  if (!linkedSectionSlug) return null;
+  const hashIndex = linkedSectionSlug.indexOf("#");
+  const baseSlug = hashIndex >= 0 ? linkedSectionSlug.slice(0, hashIndex) : linkedSectionSlug;
+  const anchor = hashIndex >= 0 ? linkedSectionSlug.slice(hashIndex + 1) : "";
+
+  const section = sectionMap.get(baseSlug);
+  if (!section) return null;
+
+  return { section, href: `/${section.slug}${anchor ? `#${anchor}` : ""}` };
+}
 
 export function sectionsInCategory(categorySlug: string): Section[] {
   return sections.filter(

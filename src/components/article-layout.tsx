@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getAdjacentSections, type Category, type ContentBlock, type Section } from "@/lib/sections";
 import { headingId } from "@/lib/heading-id";
 import { countTopLevelSections, estimateReadingMinutes } from "@/lib/reading-time";
-import { linkifyText } from "@/lib/linkify";
+import { linkifyContent } from "@/lib/linkify";
 import { ArticleOverview } from "@/components/article-overview";
 import { ChapterNav } from "@/components/chapter-nav";
 import { ContentCallout } from "@/components/content-callout";
@@ -85,8 +85,8 @@ export function ArticleLayout({ section, category, content }: ArticleLayoutProps
             if (block.type === "list") {
               return (
                 <ul key={index} className="space-y-3">
-                  {block.items.map((item) => (
-                    <li key={item}>• {linkifyText(item, section.slug, linkedTermIds)}</li>
+                  {block.items.map((item, itemIndex) => (
+                    <li key={itemIndex}>• {linkifyContent(item, section.slug, linkedTermIds)}</li>
                   ))}
                 </ul>
               );
@@ -100,15 +100,15 @@ export function ArticleLayout({ section, category, content }: ArticleLayoutProps
                   key={index}
                   variant={block.variant}
                   title={block.title}
-                  text={block.text}
-                  items={block.items}
+                  text={block.text ? linkifyContent(block.text, section.slug, linkedTermIds) : undefined}
+                  items={block.items?.map((item) => linkifyContent(item, section.slug, linkedTermIds))}
                   collapsed={block.collapsed}
                 />
               );
             }
             return (
               <p key={index}>
-                {linkifyText(block.text, section.slug, linkedTermIds)}
+                {linkifyContent(block.text, section.slug, linkedTermIds)}
                 {block.linkHref && block.linkText ? (
                   <>
                     {" "}

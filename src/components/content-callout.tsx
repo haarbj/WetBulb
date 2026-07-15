@@ -1,10 +1,15 @@
+import type { ReactNode } from "react";
+
 import type { CalloutVariant } from "@/lib/sections";
 
 type ContentCalloutProps = {
   variant: CalloutVariant;
   title?: string;
-  text?: string;
-  items?: string[];
+  // ReactNode (not string) so a caller can pass already-linkified content
+  // (see linkifyContent in lib/linkify.tsx) -- a plain string is still a
+  // valid ReactNode, so tool components passing hardcoded copy are unaffected.
+  text?: ReactNode;
+  items?: ReactNode[];
   collapsed?: boolean;
 };
 
@@ -43,8 +48,8 @@ export function ContentCallout({ variant, title, text, items, collapsed }: Conte
       {text ? <p className="text-base leading-7 text-zinc-700 dark:text-zinc-300">{text}</p> : null}
       {items && items.length > 0 ? (
         <ul className={`space-y-2 text-base leading-7 text-zinc-700 dark:text-zinc-300 ${text ? "mt-2" : ""}`}>
-          {items.map((item) => (
-            <li key={item}>• {item}</li>
+          {items.map((item, index) => (
+            <li key={index}>• {item}</li>
           ))}
         </ul>
       ) : null}

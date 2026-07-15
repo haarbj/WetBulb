@@ -1,4 +1,6 @@
-import { categoryMap } from "@/lib/sections";
+import Link from "next/link";
+
+import { categoryMap, resolveLinkedSection } from "@/lib/sections";
 import { formatRelativeTime } from "@/lib/format";
 import type { Question } from "@/lib/questions/types";
 import { StatusBadge } from "@/components/questions/status-badge";
@@ -13,6 +15,12 @@ type QuestionCardProps = {
 export function QuestionCard({ question, upvoted }: QuestionCardProps) {
   const categoryLabel = question.category ? categoryMap.get(question.category)?.title : null;
   const submitter = question.displayName?.trim() || "Anonymous";
+  // Only link if the slug an admin typed actually resolves to a real
+  // section -- a typo'd slug falls back to the plain (non-link) title
+  // instead of sending readers to a 404. The stored value may carry a
+  // heading anchor (e.g. "recovery#some-heading"); resolveLinkedSection
+  // strips that off for the lookup and reattaches it to the href.
+  const linked = resolveLinkedSection(question.linkedSectionSlug);
 
   return (
     <Card padding="sm" className="flex gap-4">
@@ -33,7 +41,22 @@ export function QuestionCard({ question, upvoted }: QuestionCardProps) {
           ) : null}
         </div>
 
-        {question.description ? (
+        {linked ? (
+          <div className="mt-2">
+            <Link
+              href={linked.href}
+              className="text-base font-semibold tracking-tight text-zinc-900 underline decoration-black/20 underline-offset-2 hover:decoration-black/60 dark:text-white dark:decoration-white/30 dark:hover:decoration-white/70"
+            >
+              {question.title}
+            </Link>
+            {question.description ? (
+              <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">{question.description}</p>
+            ) : null}
+            <p className="mt-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+              → Read in {linked.section.title}
+            </p>
+          </div>
+        ) : question.description ? (
           <details className="mt-2 group">
             <summary className="cursor-pointer list-none text-base font-semibold tracking-tight text-zinc-900 marker:content-none dark:text-white">
               {question.title}

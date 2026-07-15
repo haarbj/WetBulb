@@ -12,6 +12,7 @@ import {
   type ContentSuggestion,
 } from "@/app/(app)/(protected)/admin/questions/actions";
 import { searchExistingQuestions, type QuestionSearchResult } from "@/app/questions/actions";
+import { LinkedSectionPicker } from "@/app/(app)/(protected)/admin/questions/[id]/linked-section-picker";
 import { categories } from "@/lib/sections";
 import { fieldClass, labelClass } from "@/lib/form-styles";
 import { STATUS_LABELS, STATUS_ORDER, type Question } from "@/lib/questions/types";
@@ -33,8 +34,46 @@ export function QuestionTriagePanel({ question }: { question: Question }) {
   );
 }
 
+type EditableFields = {
+  title: string;
+  description: string;
+  category: string;
+  status: Question["status"];
+  tagsInput: string;
+  linkedSectionSlug: string;
+  adminResponse: string;
+  isFaq: boolean;
+  adminNotes: string;
+};
+
+function fieldsFromQuestion(question: Question): EditableFields {
+  return {
+    title: question.title,
+    description: question.description ?? "",
+    category: question.category ?? "",
+    status: question.status,
+    tagsInput: question.tags.join(", "),
+    linkedSectionSlug: question.linkedSectionSlug ?? "",
+    adminResponse: question.adminResponse ?? "",
+    isFaq: question.isFaq,
+    adminNotes: question.adminNotes ?? "",
+  };
+}
+
 function EditForm({ question }: { question: Question }) {
   const [state, formAction, isPending] = useActionState(updateQuestion, {});
+  // Controlled instead of defaultValue/uncontrolled: React resets
+  // uncontrolled form fields to their defaultValue once a form action
+  // finishes running, whether it succeeded or returned an error -- that's
+  // invisible on success (the refreshed `question` prop already matches
+  // what was just typed), but on a validation failure it silently
+  // discarded everything the user had entered. Owning the values here
+  // means a failed action leaves this state, and the screen, untouched.
+  const [fields, setFields] = useState<EditableFields>(() => fieldsFromQuestion(question));
+
+  function setField<K extends keyof EditableFields>(field: K, value: EditableFields[K]) {
+    setFields((prev) => ({ ...prev, [field]: value }));
+  }
 
   return (
     <Card as="form" action={formAction} padding="md" className="space-y-5">
@@ -43,7 +82,13 @@ function EditForm({ question }: { question: Question }) {
 
       <div>
         <label htmlFor="title" className={labelClass}>Title</label>
-        <input id="title" name="title" defaultValue={question.title} className={`${fieldClass} w-full`} />
+        <input
+          id="title"
+          name="title"
+          value={fields.title}
+          onChange={(e) => setField("title", e.target.value)}
+          className={`${fieldClass} w-full`}
+        />
       </div>
 
       <div>
@@ -52,7 +97,8 @@ function EditForm({ question }: { question: Question }) {
           id="description"
           name="description"
           rows={3}
-          defaultValue={question.description ?? ""}
+          value={fields.description}
+          onChange={(e) => setField("description", e.target.value)}
           className={`${fieldClass} w-full`}
         />
       </div>
@@ -60,7 +106,13 @@ function EditForm({ question }: { question: Question }) {
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="category" className={labelClass}>Category</label>
-          <select id="category" name="category" defaultValue={question.category ?? ""} className={`${fieldClass} w-full`}>
+          <select
+            id="category"
+            name="category"
+            value={fields.category}
+            onChange={(e) => setField("category", e.target.value)}
+            className={`${fieldClass} w-full`}
+          >
             <option value="">Uncategorized</option>
             {categories.map((c) => (
               <option key={c.slug} value={c.slug}>{c.title}</option>
@@ -69,7 +121,13 @@ function EditForm({ question }: { question: Question }) {
         </div>
         <div>
           <label htmlFor="status" className={labelClass}>Status</label>
-          <select id="status" name="status" defaultValue={question.status} className={`${fieldClass} w-full`}>
+          <select
+            id="status"
+            name="status"
+            value={fields.status}
+            onChange={(e) => setField("status", e.target.value as Question["status"])}
+            className={`${fieldClass} w-full`}
+          >
             {STATUS_ORDER.map((s) => (
               <option key={s} value={s}>{STATUS_LABELS[s]}</option>
             ))}
@@ -82,23 +140,16 @@ function EditForm({ question }: { question: Question }) {
         <input
           id="tagsInput"
           name="tagsInput"
-          defaultValue={question.tags.join(", ")}
+          value={fields.tagsInput}
+          onChange={(e) => setField("tagsInput", e.target.value)}
           className={`${fieldClass} w-full`}
         />
       </div>
 
-      <div>
-        <label htmlFor="linkedSectionSlug" className={labelClass}>
-          Linked article slug (set when status is “Added to Library”)
-        </label>
-        <input
-          id="linkedSectionSlug"
-          name="linkedSectionSlug"
-          defaultValue={question.linkedSectionSlug ?? ""}
-          placeholder="e.g. strength-training"
-          className={`${fieldClass} w-full`}
-        />
-      </div>
+      <LinkedSectionPicker
+        value={fields.linkedSectionSlug}
+        onChange={(next) => setField("linkedSectionSlug", next)}
+      />
 
       <div>
         <label htmlFor="adminResponse" className={labelClass}>
@@ -108,7 +159,8 @@ function EditForm({ question }: { question: Question }) {
           id="adminResponse"
           name="adminResponse"
           rows={3}
-          defaultValue={question.adminResponse ?? ""}
+          value={fields.adminResponse}
+          onChange={(e) => setField("adminResponse", e.target.value)}
           className={`${fieldClass} w-full`}
         />
       </div>
@@ -118,7 +170,8 @@ function EditForm({ question }: { question: Question }) {
           type="checkbox"
           name="isFaq"
           value="true"
-          defaultChecked={question.isFaq}
+          checked={fields.isFaq}
+          onChange={(e) => setField("isFaq", e.target.checked)}
           className="accent-zinc-900 dark:accent-white"
         />
         Add to FAQ
@@ -130,7 +183,8 @@ function EditForm({ question }: { question: Question }) {
           id="adminNotes"
           name="adminNotes"
           rows={3}
-          defaultValue={question.adminNotes ?? ""}
+          value={fields.adminNotes}
+          onChange={(e) => setField("adminNotes", e.target.value)}
           className={`${fieldClass} w-full`}
         />
       </div>

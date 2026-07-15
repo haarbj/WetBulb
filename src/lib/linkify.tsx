@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 
 import { glossaryTerms, type GlossaryTerm } from "@/lib/glossary";
+import { linkifySectionReferences } from "@/lib/section-linkify";
 
 type AliasEntry = { alias: string; term: GlossaryTerm };
 
@@ -82,4 +83,21 @@ export function linkifyText(
 
   nodes.push(text.slice(lastIndex));
   return nodes;
+}
+
+/**
+ * Full content-linking pass: cross-references ("see X in Y") first, then
+ * glossary terms within whatever plain text remains -- applied to every
+ * paragraph, list item, and callout an article renders, so the same
+ * "see X in Y" convention links correctly no matter which block type it
+ * appears in.
+ */
+export function linkifyContent(
+  text: string,
+  currentSlug: string,
+  linkedTermIds: Set<string>,
+): ReactNode[] {
+  return linkifySectionReferences(text, currentSlug).flatMap((node) =>
+    typeof node === "string" ? linkifyText(node, currentSlug, linkedTermIds) : [node],
+  );
 }
